@@ -5,6 +5,11 @@ import vexiq
 import drivetrain
 import math
 
+class XYCoordinates:
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+
 class Robot():
     x = 0
     y = 0
@@ -94,7 +99,36 @@ class Robot():
         return None
 
     def resolveXY(self,x,y,distance,rotation):
-        return None
+        """gyro = math.radians(gyro) #turns the gyro reading into radians
+
+        coordinates = XYCoordinates() #makes a new set of coordinates
+
+        if gyro == 0:
+            coordinates.y = yCoord + distance
+        elif gyro == 180 or gyro == -180:
+            coordinates.y = yCoord - distance
+        elif gyro == 90:
+            coordinates.x = xCoord + distance
+        elif gyro == -90:
+            coordinates.x = xCoord - distance
+        else:
+            if gyro > 0 and gyro < 90:
+                coordinates.x = xCoord + (math.sin(gyro) * distance)
+                coordinates.y = yCoord + (math.cos(gyro) * distance)
+            elif gyro > 0 and gyro > 90:
+                coordinates.x = xCoord + (math.cos(gyro - 90) * distance)
+                coordinates.y = yCoord - (math.sin(gyro - 90) * distance)
+            elif gyro < 0 and gyro > -90:
+                coordinates.x = xCoord - (math.sin(math.fabs(gyro)) * distance)
+                coordinates.y = yCoord + (math.cos(math.fabs(gyro)) * distance)
+            elif gyro < 0 and gyro < -90:
+                coordinates.x = xCoord - (math.cos(math.fabs(gyro + 90)) * distance)
+                coordinates.y = yCoord - (math.sin(math.fabs(gyro + 90)) * distance)
+
+        coordinates.x = round(coordinates.x)
+        coordinates.y = round(coordinates.y)
+
+        return coordinates"""
 
     def checkCone(self): # a simple test function to check to see if there is anything in front of the robot
 
@@ -102,6 +136,19 @@ class Robot():
             return True
         else:
             return False
+
+    def startGyro(self):
+        self.gyro1.calibrate()
+        self.gyro2.calibrate()
+        while self.gyro1.is_calibrating() and self.gyro2.is_calibrating():
+            continue
+        self.gyro1.angle(0)
+        self.gyro2.angle(0)
+
+    def angle(self):
+        self.angle_1 = -1 * round((self.gyro1.angle() + self.gyro2.angle()) / 2)
+        return self.angle_1
+
 
 #region config
 LeftDrive   = vexiq.Motor(1)
@@ -117,15 +164,26 @@ import drivetrain
 dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 176)
 #endregion config
 
-robot = Robot(LeftDrive,RightDrive,Gyro1,Gyro2,dt,LeftColor,RightColor,MiddleUltra)
+robot = Robot(LeftDrive,RightDrive,Gyro1,Gyro2,dt,LeftColor,RightColor,MiddleUltra) #create robot class
+
+TouchLed.named_color(3) #orange
+vexiq.lcd_write("Gyro Calibrating..")
+
+robot.startGyro() #calibrate both gyros
 
 while True:
-    TouchLed.named_color(9)
+    TouchLed.named_color(9) #blue
+
+    vexiq.lcd_write("Gyro: " + str(robot.angle()),1)
+    vexiq.lcd_write("X Coord: " + str(robot.x),2)
+    vexiq.lcd_write("Y Coord: " + str(robot.y),3)
+
+
     if TouchLed.is_touch():
 
         TouchLed.named_color(3) #orange
 
-        result = robot.moveBy(30)
+        result = robot.moveBy(50)
 
         if result == True:
             TouchLed.named_color(7) #green
