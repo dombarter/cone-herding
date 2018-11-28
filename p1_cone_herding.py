@@ -123,37 +123,40 @@ class Robot():
     def resolveReadings(self):
         return None
 
-    def resolveXY(self,x,y,distance,rotation): #function to update distaplacement of the robot by calculating new coordinates
-        """gyro = math.radians(gyro) #turns the gyro reading into radians
+    def resolveXY(self,xCoord,yCoord,distance,rotation): #function to update distaplacement of the robot by calculating new coordinates
 
-        coordinates = XYCoordinates() #makes a new set of coordinates
+        self.radians = math.radians(rotation) #turns the gyro reading into radians
 
-        if gyro == 0:
-            coordinates.y = yCoord + distance
-        elif gyro == 180 or gyro == -180:
-            coordinates.y = yCoord - distance
-        elif gyro == 90:
-            coordinates.x = xCoord + distance
-        elif gyro == -90:
-            coordinates.x = xCoord - distance
+        self.gyro = rotation #keeps the gyro reading in degrees
+
+        self.coordinates = XYCoordinates() #makes a new set of coordinates (THIS MAY NOT WORK)
+                                                                            # the xy-coord class may need to be inside this class
+        if self.gyro == 0:
+            self.coordinates.y = yCoord + distance
+        elif self.gyro == 180 or self.gyro == -180:
+            self.coordinates.y = yCoord - distance
+        elif self.gyro == 90:
+            self.coordinates.x = xCoord + distance
+        elif self.gyro == -90:
+            self.coordinates.x = xCoord - distance
         else:
-            if gyro > 0 and gyro < 90:
-                coordinates.x = xCoord + (math.sin(gyro) * distance)
-                coordinates.y = yCoord + (math.cos(gyro) * distance)
-            elif gyro > 0 and gyro > 90:
-                coordinates.x = xCoord + (math.cos(gyro - 90) * distance)
-                coordinates.y = yCoord - (math.sin(gyro - 90) * distance)
-            elif gyro < 0 and gyro > -90:
-                coordinates.x = xCoord - (math.sin(math.fabs(gyro)) * distance)
-                coordinates.y = yCoord + (math.cos(math.fabs(gyro)) * distance)
-            elif gyro < 0 and gyro < -90:
-                coordinates.x = xCoord - (math.cos(math.fabs(gyro + 90)) * distance)
-                coordinates.y = yCoord - (math.sin(math.fabs(gyro + 90)) * distance)
+            if self.gyro > 0 and self.gyro < 90:
+                self.coordinates.x = xCoord + (math.sin(self.radians) * distance)
+                self.coordinates.y = yCoord + (math.cos(self.radians) * distance)
+            elif self.gyro > 0 and self.gyro > 90:
+                self.coordinates.x = xCoord + (math.cos(self.radians - 90) * distance)
+                self.coordinates.y = yCoord - (math.sin(self.radians - 90) * distance)
+            elif self.gyro < 0 and self.gyro > -90:
+                self.coordinates.x = xCoord - (math.sin(math.fabs(self.radians)) * distance)
+                self.coordinates.y = yCoord + (math.cos(math.fabs(self.radians)) * distance)
+            elif self.gyro < 0 and self.gyro < -90:
+                self.coordinates.x = xCoord - (math.cos(math.fabs(self.radians + 90)) * distance)
+                self.coordinates.y = yCoord - (math.sin(math.fabs(self.radians + 90)) * distance)
 
-        coordinates.x = round(coordinates.x)
-        coordinates.y = round(coordinates.y)
+        self.coordinates.x = round(self.coordinates.x)
+        self.coordinates.y = round(self.coordinates.y)
 
-        return coordinates"""
+        return self.coordinates
 
     def startGyro(self): #calibrates both gyros
         self.gyro1.calibrate()
