@@ -1,16 +1,28 @@
 """__CONFIG__
 {"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Gyro1","typeName":"gyro","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"Gyro2","typeName":"gyro","extraConfig":null,"bufferIndex":4},{"hwid":"6","name":"MiddleUltra","typeName":"distance_cm","extraConfig":null,"bufferIndex":5},{"hwid":"7","name":"LeftColor","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"8","name":"RightColor","typeName":"color_hue","extraConfig":null,"bufferIndex":7},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":176},"bufferIndex":8},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":9},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":10},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":11},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":12},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":13}]}"""
+
+# external library imports ------------------
+
 import sys
 import vexiq
 import drivetrain
 import math
 
+# -------------------------------------------
+
+# objects and classes -----------------------
+
+# XYCoordinates class
 class XYCoordinates:
     def __init__(self):
         self.x = 0
         self.y = 0
 
+# Robot class
 class Robot():
+
+    # public properties----------------------
+
     x = 0
     y = 0
     visitingHerdPoint = True
@@ -20,7 +32,12 @@ class Robot():
     robotRadius = 15
     wheelCircumference = 20
     distanceSensorSpacing = 5
-    def __init__(self,leftDrive,rightDrive,gyro1,gyro2,dt,colorLeft,colorRight,distanceMiddle): #object instantiation
+
+    # ---------------------------------------
+
+    # object instantiation ------------------
+
+    def __init__(self,leftDrive,rightDrive,gyro1,gyro2,dt,colorLeft,colorRight,distanceMiddle):
         self.leftDrive = leftDrive
         self.rightDrive = rightDrive
         self.gyro1 = gyro1
@@ -30,12 +47,20 @@ class Robot():
         self.colorLeft = colorLeft
         self.distanceMiddle = distanceMiddle
 
+    # ---------------------------------------
+
+    # basic mathematical functions ----------
+
     def intify(self,number): #used to convert from float to int
         num = round(number)
         iterate = 0
         while iterate != num:
             iterate+=1
         return iterate
+
+    # ---------------------------------------
+
+    # NON-DEV robot specific functions ------
 
     def returnToHerdPoint(self,herdpoint):
         return None
@@ -46,7 +71,7 @@ class Robot():
     def collectCone(self):
         return None
 
-    def moveBy(self,distance):
+    def moveBy(self,distance): #move the robot forwards by a certain distance
 
         self.cm = self.intify(distance)
 
@@ -98,7 +123,7 @@ class Robot():
     def resolveReadings(self):
         return None
 
-    def resolveXY(self,x,y,distance,rotation):
+    def resolveXY(self,x,y,distance,rotation): #function to update distaplacement of the robot by calculating new coordinates
         """gyro = math.radians(gyro) #turns the gyro reading into radians
 
         coordinates = XYCoordinates() #makes a new set of coordinates
@@ -130,6 +155,22 @@ class Robot():
 
         return coordinates"""
 
+    def startGyro(self): #calibrates both gyros
+        self.gyro1.calibrate()
+        self.gyro2.calibrate()
+        while self.gyro1.is_calibrating() and self.gyro2.is_calibrating(): #doesnt return from function until calibration complete
+            continue
+        self.gyro1.angle(0)
+        self.gyro2.angle(0)
+
+    def angle(self): #gets both gyro readings and returns an average
+        self.angle_1 = -1 * round((self.gyro1.angle() + self.gyro2.angle()) / 2)
+        return self.angle_1
+
+    # ---------------------------------------
+
+    # DEV robot specific functions ----------
+
     def checkCone(self): # a simple test function to check to see if there is anything in front of the robot
 
         if self.distanceMiddle.distance() < 30:
@@ -137,18 +178,9 @@ class Robot():
         else:
             return False
 
-    def startGyro(self):
-        self.gyro1.calibrate()
-        self.gyro2.calibrate()
-        while self.gyro1.is_calibrating() and self.gyro2.is_calibrating():
-            continue
-        self.gyro1.angle(0)
-        self.gyro2.angle(0)
+# -------------------------------------------
 
-    def angle(self):
-        self.angle_1 = -1 * round((self.gyro1.angle() + self.gyro2.angle()) / 2)
-        return self.angle_1
-
+# Hardware setup and port selection ---------
 
 #region config
 LeftDrive   = vexiq.Motor(1)
@@ -159,17 +191,25 @@ Gyro2       = vexiq.Gyro(5)
 MiddleUltra = vexiq.DistanceSensor(6, vexiq.UNIT_CM)
 LeftColor   = vexiq.ColorSensor(7) # hue
 RightColor  = vexiq.ColorSensor(8) # hue
-
-import drivetrain
 dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 176)
 #endregion config
 
+# -------------------------------------------
+
+# Pre-program object creation ---------------
+
 robot = Robot(LeftDrive,RightDrive,Gyro1,Gyro2,dt,LeftColor,RightColor,MiddleUltra) #create robot class
 
-TouchLed.named_color(3) #orange
-vexiq.lcd_write("Gyro Calibrating..")
+# -------------------------------------------
 
+# Pre-program calibration and startup -------
+TouchLed.named_color(3) #orange
+vexiq.lcd_write("Gyro Calibrating..") #output to lcd screen
 robot.startGyro() #calibrate both gyros
+
+# -------------------------------------------
+
+# Main Program ------------------------------
 
 while True:
     TouchLed.named_color(9) #blue
@@ -190,3 +230,5 @@ while True:
         else:
             TouchLed.named_color(1) #red
         sys.sleep(1.5)
+
+# -------------------------------------------
