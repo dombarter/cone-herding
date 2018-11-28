@@ -129,8 +129,10 @@ class Robot():
 
         self.gyro = rotation #keeps the gyro reading in degrees
 
-        self.coordinates = XYCoordinates() #makes a new set of coordinates (THIS MAY NOT WORK)
-                                                                            # the xy-coord class may need to be inside this class
+        self.coordinates = XYCoordinates() #makes a new set of coordinates
+
+        self.ninety = math.radians(90) # 90 in radians
+
         if self.gyro == 0:
             self.coordinates.y = yCoord + distance
         elif self.gyro == 180 or self.gyro == -180:
@@ -144,14 +146,14 @@ class Robot():
                 self.coordinates.x = xCoord + (math.sin(self.radians) * distance)
                 self.coordinates.y = yCoord + (math.cos(self.radians) * distance)
             elif self.gyro > 0 and self.gyro > 90:
-                self.coordinates.x = xCoord + (math.cos(self.radians - 90) * distance)
-                self.coordinates.y = yCoord - (math.sin(self.radians - 90) * distance)
+                self.coordinates.x = xCoord + (math.cos(self.radians - self.ninety) * distance)
+                self.coordinates.y = yCoord - (math.sin(self.radians - self.ninety) * distance)
             elif self.gyro < 0 and self.gyro > -90:
                 self.coordinates.x = xCoord - (math.sin(math.fabs(self.radians)) * distance)
                 self.coordinates.y = yCoord + (math.cos(math.fabs(self.radians)) * distance)
             elif self.gyro < 0 and self.gyro < -90:
-                self.coordinates.x = xCoord - (math.cos(math.fabs(self.radians + 90)) * distance)
-                self.coordinates.y = yCoord - (math.sin(math.fabs(self.radians + 90)) * distance)
+                self.coordinates.x = xCoord - (math.cos(math.fabs(self.radians + self.ninety)) * distance)
+                self.coordinates.y = yCoord - (math.sin(math.fabs(self.radians + self.ninety)) * distance)
 
         self.coordinates.x = round(self.coordinates.x)
         self.coordinates.y = round(self.coordinates.y)
