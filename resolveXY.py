@@ -42,6 +42,6 @@ def resolveXY(xCoord,yCoord,distance,gyro):
 
     return coordinates
 
-result = resolveXY(0,0,10,-90)
+result = resolveXY(0,50,50,-90)
 print("X: " + str(result.x))
 print("Y: " + str(result.y))

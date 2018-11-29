@@ -73,46 +73,59 @@ class Robot():
 
     def moveBy(self,distance): #move the robot forwards by a certain distance
 
+        self.currentGyro = self.angle()
+        
+        vexiq.lcd_write(self.currentGyro)
+        
         self.cm = self.intify(distance)
 
         if self.checkCone() == True:
             return False #robot has been unable to reach the final destination
         else:
             
-            
-            self.currentGyro = self.angle()
-            
             if self.cm <= 15:
                 self.drivetrain.drive_until(30,self.cm*10)
                 
                 self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentGyro)
+                
                 self.x = self.resolveResult.x
                 self.y = self.resolveResult.y
+                
+                self.gyro1.angle(-1*self.currentGyro)
+                self.gyro2.angle(-1*self.currentGyro)
                 
                 return True #robot has been able to reach destination
             else:
                 self.numberOfIterations = self.intify(math.floor(self.cm / 15))
                 self.remainder = self.intify(self.cm % 15)
 
-                if self.remainder == 0:
+                if self.remainder == 0: #if distance is a multiple of 15
                     for i in range(0,self.numberOfIterations):
                         if self.checkCone() == True:
                             return False #robot has been unable to reach the final destination
                         self.drivetrain.drive_until(30,150) #move robot by 15cm
                         
                         self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
+                        
                         self.x = self.resolveResult.x
                         self.y = self.resolveResult.y
+                        
+                        self.gyro1.angle(-1*self.currentGyro)
+                        self.gyro2.angle(-1*self.currentGyro)
 
                     return True #robot has been able to reach destination
 
-                else:
+                else: #if distance is not a multiple of 15
                     for i in range(0,self.numberOfIterations):
                         self.drivetrain.drive_until(30,150)
                         
                         self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
+                        
                         self.x = self.resolveResult.x
                         self.y = self.resolveResult.y
+                        
+                        self.gyro1.angle(-1*self.currentGyro)
+                        self.gyro2.angle(-1*self.currentGyro)
                         
                         if self.checkCone() == True:
                             return False #robot has been unable to reach the final destination
@@ -120,13 +133,15 @@ class Robot():
                     self.drivetrain.drive_until(30,self.remainder*10)
                     
                     self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentGyro)
+                    
                     self.x = self.resolveResult.x
                     self.y = self.resolveResult.y
                     
+                    self.gyro1.angle(-1*self.currentGyro)
+                    self.gyro2.angle(-1*self.currentGyro)
+                    
                     return True #robot has been able to reach destination
 
-            self.gyro1.angle(self.currentGyro)
-            self.gyro2.angle(self.currentGyro)
 
     def rotateTo(self,degrees):
         return None
@@ -254,7 +269,7 @@ while True:
 
         TouchLed.named_color(3) #orange
 
-        result = robot.moveBy(50)
+        result = robot.moveBy(15)
 
         if result == True:
             TouchLed.named_color(7) #green
