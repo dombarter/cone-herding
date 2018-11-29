@@ -78,8 +78,17 @@ class Robot():
         if self.checkCone() == True:
             return False #robot has been unable to reach the final destination
         else:
+            
+            
+            self.currentGyro = self.angle()
+            
             if self.cm <= 15:
                 self.drivetrain.drive_until(30,self.cm*10)
+                
+                self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentGyro)
+                self.x = self.resolveResult.x
+                self.y = self.resolveResult.y
+                
                 return True #robot has been able to reach destination
             else:
                 self.numberOfIterations = self.intify(math.floor(self.cm / 15))
@@ -90,17 +99,34 @@ class Robot():
                         if self.checkCone() == True:
                             return False #robot has been unable to reach the final destination
                         self.drivetrain.drive_until(30,150) #move robot by 15cm
+                        
+                        self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
+                        self.x = self.resolveResult.x
+                        self.y = self.resolveResult.y
 
                     return True #robot has been able to reach destination
 
                 else:
                     for i in range(0,self.numberOfIterations):
                         self.drivetrain.drive_until(30,150)
+                        
+                        self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
+                        self.x = self.resolveResult.x
+                        self.y = self.resolveResult.y
+                        
                         if self.checkCone() == True:
                             return False #robot has been unable to reach the final destination
 
                     self.drivetrain.drive_until(30,self.remainder*10)
+                    
+                    self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentGyro)
+                    self.x = self.resolveResult.x
+                    self.y = self.resolveResult.y
+                    
                     return True #robot has been able to reach destination
+
+            self.gyro1.angle(self.currentGyro)
+            self.gyro2.angle(self.currentGyro)
 
     def rotateTo(self,degrees):
         return None
