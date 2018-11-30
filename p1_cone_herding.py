@@ -73,73 +73,66 @@ class Robot():
 
     def moveBy(self,distance): #move the robot forwards by a certain distance
 
-        self.currentGyro = self.angle()
+        self.currentGyro = self.angle() #gets current gyro reading
+        self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
 
-        vexiq.lcd_write(self.currentGyro)
+        if self.checkCone() == True: #if cone is in the way
 
-        self.cm = self.intify(distance)
-
-        if self.checkCone() == True:
+            self.angle(self.currentGyro) # reset any gyro drift
             return False #robot has been unable to reach the final destination
+
         else:
 
-            if self.cm <= 15:
+            if self.cm <= 15: #if distance is less than the 15cm increment value
+
                 self.drivetrain.drive_until(30,self.cm*10)
-
                 self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentGyro)
-
                 self.x = self.resolveResult.x
                 self.y = self.resolveResult.y
 
-                self.gyro1.angle(-1*self.currentGyro)
-                self.gyro2.angle(-1*self.currentGyro)
-
+                self.angle(self.currentGyro) # reset any gyro drift
                 return True #robot has been able to reach destination
+
             else:
+
                 self.numberOfIterations = self.intify(math.floor(self.cm / 15))
                 self.remainder = self.intify(self.cm % 15)
 
                 if self.remainder == 0: #if distance is a multiple of 15
+
                     for i in range(0,self.numberOfIterations):
+
                         if self.checkCone() == True:
+                            self.angle(self.currentGyro) # reset any gyro drift
                             return False #robot has been unable to reach the final destination
+
                         self.drivetrain.drive_until(30,150) #move robot by 15cm
-
                         self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
-
                         self.x = self.resolveResult.x
                         self.y = self.resolveResult.y
 
-                        self.gyro1.angle(-1*self.currentGyro)
-                        self.gyro2.angle(-1*self.currentGyro)
-
+                    self.angle(self.currentGyro) # reset any gyro drift
                     return True #robot has been able to reach destination
 
                 else: #if distance is not a multiple of 15
+
                     for i in range(0,self.numberOfIterations):
+
                         self.drivetrain.drive_until(30,150)
-
                         self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
-
                         self.x = self.resolveResult.x
                         self.y = self.resolveResult.y
 
-                        self.gyro1.angle(-1*self.currentGyro)
-                        self.gyro2.angle(-1*self.currentGyro)
-
                         if self.checkCone() == True:
+                            self.angle(self.currentGyro) # reset any gyro drift
                             return False #robot has been unable to reach the final destination
 
                     self.drivetrain.drive_until(30,self.remainder*10)
-
                     self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentGyro)
-
                     self.x = self.resolveResult.x
                     self.y = self.resolveResult.y
 
-                    self.gyro1.angle(-1*self.currentGyro)
-                    self.gyro2.angle(-1*self.currentGyro)
-
+                    self.angle(self.currentGyro) # reset any gyro drift
                     return True #robot has been able to reach destination
 
 
