@@ -209,9 +209,15 @@ class Robot():
         self.gyro1.angle(0)
         self.gyro2.angle(0)
 
-    def angle(self): #gets both gyro readings and returns an average
-        self.angle_1 = -1 * round((self.gyro1.angle() + self.gyro2.angle()) / 2)
-        return self.angle_1
+    def angle(self,new_angle = None): #gets both gyro readings and returns an average
+
+        if new_angle != None: #seting the gyro value
+            self.gyro1.angle(-1*new_angle)
+            self.gyro2.angle(-1*new_angle)
+            return None
+        else: #reading the gyro value
+            self.angle_1 = -1 * round((self.gyro1.angle() + self.gyro2.angle()) / 2)
+            return self.angle_1
 
     # ---------------------------------------
 
