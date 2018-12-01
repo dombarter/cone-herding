@@ -77,63 +77,47 @@ class Robot():
         self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
 
         if self.checkCone() == True: #if cone is in the way
-
             self.angle(self.currentGyro) # reset any gyro drift
             return False #robot has been unable to reach the final destination
 
-        else:
+        else: #if no cone in the way
+            self.numberOfIterations = self.intify(math.floor(self.cm / 15))
+            self.remainder = self.intify(self.cm % 15)
 
-            if self.cm <= 15: #if distance is less than the 15cm increment value
+            if self.remainder == 0: #if distance is a multiple of 15
 
-                self.drivetrain.drive_until(30,self.cm*10)
-                self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentGyro)
-                self.x = self.resolveResult.x
-                self.y = self.resolveResult.y
+                for i in range(0,self.numberOfIterations):
+
+                    if self.checkCone() == True:
+                        self.angle(self.currentGyro) # reset any gyro drift
+                        return False #robot has been unable to reach the final destination
+
+                    self.drivetrain.drive_until(30,150) #move robot by 15cm
+                    self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
+                    self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
                 self.angle(self.currentGyro) # reset any gyro drift
                 return True #robot has been able to reach destination
 
-            else:
+            else: #if distance is not a multiple of 15
 
-                self.numberOfIterations = self.intify(math.floor(self.cm / 15))
-                self.remainder = self.intify(self.cm % 15)
+                for i in range(0,self.numberOfIterations):
 
-                if self.remainder == 0: #if distance is a multiple of 15
+                    self.drivetrain.drive_until(30,150)
+                    self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
+                    self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
-                    for i in range(0,self.numberOfIterations):
+                    if self.checkCone() == True:
+                        self.angle(self.currentGyro) # reset any gyro drift
+                        return False #robot has been unable to reach the final destination
 
-                        if self.checkCone() == True:
-                            self.angle(self.currentGyro) # reset any gyro drift
-                            return False #robot has been unable to reach the final destination
+                self.drivetrain.drive_until(30,self.remainder*10)
+                self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentGyro)
+                self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
-                        self.drivetrain.drive_until(30,150) #move robot by 15cm
-                        self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
-                        self.x = self.resolveResult.x
-                        self.y = self.resolveResult.y
+                self.angle(self.currentGyro) # reset any gyro drift
 
-                    self.angle(self.currentGyro) # reset any gyro drift
-                    return True #robot has been able to reach destination
-
-                else: #if distance is not a multiple of 15
-
-                    for i in range(0,self.numberOfIterations):
-
-                        self.drivetrain.drive_until(30,150)
-                        self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
-                        self.x = self.resolveResult.x
-                        self.y = self.resolveResult.y
-
-                        if self.checkCone() == True:
-                            self.angle(self.currentGyro) # reset any gyro drift
-                            return False #robot has been unable to reach the final destination
-
-                    self.drivetrain.drive_until(30,self.remainder*10)
-                    self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentGyro)
-                    self.x = self.resolveResult.x
-                    self.y = self.resolveResult.y
-
-                    self.angle(self.currentGyro) # reset any gyro drift
-                    return True #robot has been able to reach destination
+                return True #robot has been able to reach destination
 
 
     def rotateTo(self,degrees):
@@ -159,35 +143,41 @@ class Robot():
 
     def resolveXY(self,xCoord,yCoord,distance,rotation): #function to update distaplacement of the robot by calculating new coordinates
 
+        self.distance = math.fabs(distance)
+
         self.radians = math.radians(rotation) #turns the gyro reading into radians
 
         self.gyro = rotation #keeps the gyro reading in degrees
 
         self.coordinates = XYCoordinates() #makes a new set of coordinates
 
-        self.ninety = math.radians(90) # 90 in radians
+        self.ninety = math.radians(90)
 
         if self.gyro == 0:
-            self.coordinates.y = yCoord + distance
+            self.coordinates.x = xCoord
+            self.coordinates.y = yCoord + self.distance
         elif self.gyro == 180 or self.gyro == -180:
-            self.coordinates.y = yCoord - distance
+            self.coordinates.x = xCoord
+            self.coordinates.y = yCoord - self.distance
         elif self.gyro == 90:
-            self.coordinates.x = xCoord + distance
+            self.coordinates.x = xCoord + self.distance
+            self.coordinates.y = yCoord
         elif self.gyro == -90:
-            self.coordinates.x = xCoord - distance
+            self.coordinates.x = xCoord - self.distance
+            self.coordinates.y = yCoord
         else:
             if self.gyro > 0 and self.gyro < 90:
-                self.coordinates.x = xCoord + (math.sin(self.radians) * distance)
-                self.coordinates.y = yCoord + (math.cos(self.radians) * distance)
+                self.coordinates.x = xCoord + (math.sin(self.radians) * self.distance)
+                self.coordinates.y = yCoord + (math.cos(self.radians) * self.distance)
             elif self.gyro > 0 and self.gyro > 90:
-                self.coordinates.x = xCoord + (math.cos(self.radians - self.ninety) * distance)
-                self.coordinates.y = yCoord - (math.sin(self.radians - self.ninety) * distance)
+                self.coordinates.x = xCoord + (math.cos(self.radians - self.ninety) * self.distance)
+                self.coordinates.y = yCoord - (math.sin(self.radians - self.ninety) * self.distance)
             elif self.gyro < 0 and self.gyro > -90:
-                self.coordinates.x = xCoord - (math.sin(math.fabs(self.radians)) * distance)
-                self.coordinates.y = yCoord + (math.cos(math.fabs(self.radians)) * distance)
+                self.coordinates.x = xCoord - (math.sin(math.fabs(self.radians)) * self.distance)
+                self.coordinates.y = yCoord + (math.cos(math.fabs(self.radians)) * self.distance)
             elif self.gyro < 0 and self.gyro < -90:
-                self.coordinates.x = xCoord - (math.cos(math.fabs(self.radians + self.ninety)) * distance)
-                self.coordinates.y = yCoord - (math.sin(math.fabs(self.radians + self.ninety)) * distance)
+                self.coordinates.x = xCoord - (math.cos(math.fabs(self.radians + self.ninety)) * self.distance)
+                self.coordinates.y = yCoord - (math.sin(math.fabs(self.radians + self.ninety)) * self.distance)
 
         self.coordinates.x = round(self.coordinates.x)
         self.coordinates.y = round(self.coordinates.y)
@@ -202,9 +192,9 @@ class Robot():
         self.gyro1.angle(0)
         self.gyro2.angle(0)
 
-    def angle(self,new_angle = None): #gets both gyro readings and returns an average
+    def angle(self, new_angle = None): #get and set gyro readings
 
-        if new_angle != None: #seting the gyro value
+        if new_angle != None: #setting the gyro value
             self.gyro1.angle(-1*new_angle)
             self.gyro2.angle(-1*new_angle)
             return None
