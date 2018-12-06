@@ -123,12 +123,14 @@ class Robot():
 
         self.currentGyro = self.angle()
 
-        if degrees < -180 or degrees > 180:
+        if degrees < -180 or degrees > 180: #discards any calues that cannot be gyro readings
             return False
 
-        while self.angle() != degrees:
+        self.deltaR = degrees - self.angle() # creates an initial value of deltaR
 
-            self.deltaR = degrees - self.angle()
+        while self.deltaR != 0: #will keep turning until the current angle is the same as the desired angle
+
+            self.deltaR = degrees - self.angle() #calulates a new value of delta R
 
             if self.deltaR > 180:
                 self.deltaR = (self.deltaR - 180) * -1
@@ -138,14 +140,14 @@ class Robot():
             self.power = (self.deltaR / 360) * 100
 
             if self.power > 0:
-                self.power = (self.power + 10) * -1
+                self.power = (self.power + 15) * -1 # 15 is a minimum power value
             elif self.power < 0:
-                self.power = (self.power - 10) * -1
+                self.power = (self.power - 15) * -1
 
-            self.drivetrain.turn(self.power)
+            self.drivetrain.turn(self.power) #turns the robot
 
-        self.drivetrain.hold()
-        return True
+        self.drivetrain.hold() #holds motors
+        return True # returns true as turn was a success
 
     def liftArm(self):
         return None
@@ -279,8 +281,8 @@ while True:
 
         TouchLed.named_color(3) #orange
 
-        #robot.rotateTo(90)
-
+        result = robot.rotateTo(90)
+        """
         robot.moveBy(30)
 
         robot.rotateTo(90)
@@ -292,7 +294,12 @@ while True:
         robot.rotateTo(-90)
         robot.moveBy(30)
 
-        robot.rotateTo(0)
+        result = robot.rotateTo(0)"""
+
+        if result == True:
+            TouchLed.named_color(7) #green
+        else:
+            TouchLed.named_color(1) # red
 
         sys.sleep(1.5)
 
