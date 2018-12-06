@@ -119,8 +119,7 @@ class Robot():
 
                 return True #robot has been able to reach destination
 
-
-    def rotateTo(self,degrees):
+    def rotateTo(self,degrees): #rotate the robot to a certain angle
 
         self.currentGyro = self.angle()
 
@@ -130,6 +129,12 @@ class Robot():
         while self.angle() != degrees:
 
             self.deltaR = degrees - self.angle()
+
+            if self.deltaR > 180:
+                self.deltaR = (self.deltaR - 180) * -1
+            elif self.deltaR < -180:
+                self.deltaR = (self.deltaR + 180) * -1
+
             self.power = (self.deltaR / 360) * 100
 
             if self.power > 0:
@@ -273,6 +278,8 @@ while True:
     if TouchLed.is_touch():
 
         TouchLed.named_color(3) #orange
+
+        #robot.rotateTo(90)
 
         robot.moveBy(30)
 
