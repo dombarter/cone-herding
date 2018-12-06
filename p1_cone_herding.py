@@ -121,7 +121,7 @@ class Robot():
 
     def rotateTo(self,degrees): #rotate the robot to a certain angle
 
-        self.currentGyro = self.angle()
+        self.currentGyro = self.angle() #grabs gyro current value
 
         if degrees < -180 or degrees > 180: #discards any calues that cannot be gyro readings
             return False
@@ -132,13 +132,15 @@ class Robot():
 
             self.deltaR = degrees - self.angle() #calulates a new value of delta R
 
+            #changes the deltaR vlaue to the desired value
             if self.deltaR > 180:
                 self.deltaR = (self.deltaR - 180) * -1
             elif self.deltaR < -180:
                 self.deltaR = (self.deltaR + 180) * -1
 
-            self.power = (self.deltaR / 360) * 100
+            self.power = (self.deltaR / 360) * 100 #creates the power in terms of deltaR
 
+            #adds minimum power value and multiplies by -1 to conform to api ruling
             if self.power > 0:
                 self.power = (self.power + 15) * -1 # 15 is a minimum power value
             elif self.power < 0:
@@ -281,7 +283,7 @@ while True:
 
         TouchLed.named_color(3) #orange
 
-        result = robot.rotateTo(90)
+        result = robot.rotateTo(180)
         """
         robot.moveBy(30)
 
