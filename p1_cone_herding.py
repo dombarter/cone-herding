@@ -302,10 +302,13 @@ while True:
 
         TouchLed.named_color(3) #orange
 
-        #result = robot.rotateTo(120)
+        result = robot.rotateTo(90)
+        
+        result = robot.moveBy(50)
 
         #result = robot.moveBy(100)
         
+        """        
         robot.moveBy(30)
 
         robot.rotateTo(90)
@@ -317,7 +320,7 @@ while True:
         robot.rotateTo(-90)
         robot.moveBy(30)
 
-        result = robot.rotateTo(0)
+        result = robot.rotateTo(0)"""
 
         if result == True:
             TouchLed.named_color(7) #green
