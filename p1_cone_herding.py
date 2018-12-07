@@ -155,6 +155,10 @@ class Robot():
             self.drivetrain.turn(self.power) #turns the robot
 
         self.drivetrain.hold() #holds motors
+
+        if self.angle() != self.goalDegrees: #double check for any over step (recursion)
+            self.rotateTo(self.goalDegrees)
+
         return True # returns true as turn was a success
 
     def liftArm(self):
@@ -317,6 +321,6 @@ while True:
         else:
             TouchLed.named_color(1) # red
 
-        sys.sleep(1.5)
+        sys.sleep(0.5)
 
 # -------------------------------------------
