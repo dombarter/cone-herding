@@ -81,8 +81,8 @@ class Robot():
             return False #robot has been unable to reach the final destination
 
         else: #if no cone in the way
-            self.numberOfIterations = self.intify(math.floor(self.cm / 15))
-            self.remainder = self.intify(self.cm % 15)
+            self.numberOfIterations = self.intify(math.floor(self.cm / 30))
+            self.remainder = self.intify(self.cm % 30)
 
             if self.remainder == 0: #if distance is a multiple of 15
 
@@ -92,8 +92,8 @@ class Robot():
                         self.angle(self.currentGyro) # reset any gyro drift
                         return False #robot has been unable to reach the final destination
 
-                    self.drivetrain.drive_until(30,150) #move robot by 15cm
-                    self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
+                    self.drivetrain.drive_until(30,300) #move robot by 15cm
+                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentGyro)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
                 self.angle(self.currentGyro) # reset any gyro drift
@@ -103,8 +103,8 @@ class Robot():
 
                 for i in range(0,self.numberOfIterations):
 
-                    self.drivetrain.drive_until(30,150)
-                    self.resolveResult = self.resolveXY(self.x,self.y,15,self.currentGyro)
+                    self.drivetrain.drive_until(30,300)
+                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentGyro)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
                     if self.checkCone() == True:
@@ -156,7 +156,7 @@ class Robot():
 
         self.drivetrain.hold() #holds motors
 
-        if self.angle() != self.goalDegrees: #double check for any over step (recursion)
+        if self.angle() != self.goalDegrees: #double check for any over step
             self.rotateTo(self.goalDegrees)
 
         return True # returns true as turn was a success
@@ -220,8 +220,8 @@ class Robot():
         return self.coordinates
 
     def startGyro(self): #calibrates both gyros
-        self.gyro1.calibrate()
-        self.gyro2.calibrate()
+        self.gyro1.calibrate(13)
+        self.gyro2.calibrate(13)
         while self.gyro1.is_calibrating() and self.gyro2.is_calibrating(): #doesnt return from function until calibration complete
             continue
         self.gyro1.angle(0)
@@ -251,7 +251,7 @@ class Robot():
 
     def checkCone(self): # a simple test function to check to see if there is anything in front of the robot
 
-        if self.distanceMiddle.distance() < 30:
+        if self.distanceMiddle.distance() < 35:
             return True
         else:
             return False
@@ -283,6 +283,7 @@ robot = Robot(LeftDrive,RightDrive,Gyro1,Gyro2,dt,LeftColor,RightColor,MiddleUlt
 # Pre-program calibration and startup -------
 TouchLed.named_color(3) #orange
 vexiq.lcd_write("Gyro Calibrating..") #output to lcd screen
+vexiq.lcd_write("DO NOT MOVE!",3) #output to lcd screen
 robot.startGyro() #calibrate both gyros
 
 # -------------------------------------------
@@ -301,8 +302,10 @@ while True:
 
         TouchLed.named_color(3) #orange
 
-        result = robot.rotateTo(180)
-        """
+        #result = robot.rotateTo(120)
+
+        #result = robot.moveBy(100)
+        
         robot.moveBy(30)
 
         robot.rotateTo(90)
@@ -314,7 +317,7 @@ while True:
         robot.rotateTo(-90)
         robot.moveBy(30)
 
-        result = robot.rotateTo(0)"""
+        result = robot.rotateTo(0)
 
         if result == True:
             TouchLed.named_color(7) #green
