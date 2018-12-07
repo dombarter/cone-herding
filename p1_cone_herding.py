@@ -224,8 +224,16 @@ class Robot():
             self.gyro2.angle(-1*new_angle)
             return None
         else: #reading the gyro value
-            self.angle_1 = -1 * round((self.gyro1.angle() + self.gyro2.angle()) / 2)
-            return self.angle_1
+            self.angle_1 = self.gyro1.angle() #grab values
+            self.angle_2 = self.gyro2.angle()
+
+            self.angle_3 = -1 * round((self.angle_1 + self.angle_2) / 2) #creates average of gyro values
+
+            if self.angle_3 == 0: #gyro-zero-ing counter measure
+                if math.fabs(self.angle_1) > 90 and math.fabs(self.angle_2) > 90:
+                    self.angle_3 = 180
+
+            return self.angle_3 #return angle
 
     # ---------------------------------------
 
