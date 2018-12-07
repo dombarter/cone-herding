@@ -121,16 +121,22 @@ class Robot():
 
     def rotateTo(self,degrees): #rotate the robot to a certain angle
 
-        self.currentGyro = self.angle() #grabs gyro current value
-
         if degrees < -180 or degrees > 180: #discards any calues that cannot be gyro readings
             return False
 
-        self.deltaR = degrees - self.angle() # creates an initial value of deltaR
+        self.currentGyro = self.angle() #grabs gyro current value
+        self.goalDegrees = degrees #sets goal degrees
+
+        if self.currentGyro < 0 and self.goalDegrees == 180: #couteract 180/-180 clash
+            self.goalDegrees = -180
+        elif self.currentGyro > 0 and self.goalDegrees == -180:
+            self.goalDegrees = 180
+
+        self.deltaR = self.goalDegrees - self.angle() # creates an initial value of deltaR
 
         while self.deltaR != 0: #will keep turning until the current angle is the same as the desired angle
 
-            self.deltaR = degrees - self.angle() #calulates a new value of delta R
+            self.deltaR = self.goalDegrees - self.angle() #calulates a new value of delta R
 
             #changes the deltaR vlaue to the desired value
             if self.deltaR > 180:
