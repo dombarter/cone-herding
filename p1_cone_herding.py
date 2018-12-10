@@ -38,9 +38,7 @@ class Robot():
 
     # object instantiation ------------------
 
-    def __init__(self,leftDrive,rightDrive,dt,colorLeft,colorRight,distanceMiddle):
-        self.leftDrive = leftDrive
-        self.rightDrive = rightDrive
+    def __init__(self,dt,colorLeft,colorRight,distanceMiddle):
         self.drivetrain = dt
         self.colorRight = colorRight
         self.colorLeft = colorLeft
@@ -140,7 +138,6 @@ class Robot():
 
             return True
 
-
     def liftArm(self):
         return None
 
@@ -221,16 +218,14 @@ TouchLed    = vexiq.TouchLed(3)
 MiddleUltra = vexiq.DistanceSensor(6, vexiq.UNIT_CM)
 LeftColor   = vexiq.ColorSensor(7) # hue
 RightColor  = vexiq.ColorSensor(8) # hue
-
-import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 254.5)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 254.5) #wheel/track
 #endregion config
 
 # -------------------------------------------
 
 # Pre-program object creation ---------------
 
-robot = Robot(LeftDrive,RightDrive,dt,LeftColor,RightColor,MiddleUltra) #create robot class
+robot = Robot(dt,LeftColor,RightColor,MiddleUltra) #create robot class
 
 # -------------------------------------------
 
@@ -242,7 +237,6 @@ while True:
     vexiq.lcd_write("Angle: " + str(robot.angle),1)
     vexiq.lcd_write("X Coord: " + str(robot.x),2)
     vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-
 
     if TouchLed.is_touch():
 
