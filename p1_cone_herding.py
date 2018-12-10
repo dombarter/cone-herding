@@ -26,6 +26,7 @@ class Robot():
     x = 0
     y = 0
     angle = 0
+
     visitingHerdPoint = True
     carryingCone = False
     coneToCollect = False
@@ -241,7 +242,7 @@ while True:
     if TouchLed.is_touch():
 
         TouchLed.named_color(3) #orange
-        
+
         robot.moveBy(10)
         robot.rotateTo(20)
 
@@ -268,12 +269,12 @@ while True:
 
         robot.moveBy(10)
         robot.rotateTo(180)
-        
+
         """
 
         robot.rotateTo(90)
 
-        
+
         robot.moveBy(30)
         robot.rotateTo(180)
         robot.moveBy(60)
