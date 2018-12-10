@@ -1,5 +1,5 @@
 """__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Gyro1","typeName":"gyro","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"Gyro2","typeName":"gyro","extraConfig":null,"bufferIndex":4},{"hwid":"6","name":"MiddleUltra","typeName":"distance_cm","extraConfig":null,"bufferIndex":5},{"hwid":"7","name":"LeftColor","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"8","name":"RightColor","typeName":"color_hue","extraConfig":null,"bufferIndex":7},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":176},"bufferIndex":8},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":9},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":10},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":11},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":12},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":13}]}"""
+{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":2},{"hwid":"6","name":"MiddleUltra","typeName":"distance_cm","extraConfig":null,"bufferIndex":3},{"hwid":"7","name":"LeftColor","typeName":"color_hue","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"RightColor","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":254},"bufferIndex":6},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":7},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":8},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":9},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":10},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":11}]}"""
 
 # external library imports ------------------
 
@@ -38,11 +38,9 @@ class Robot():
 
     # object instantiation ------------------
 
-    def __init__(self,leftDrive,rightDrive,gyro1,gyro2,dt,colorLeft,colorRight,distanceMiddle):
+    def __init__(self,leftDrive,rightDrive,dt,colorLeft,colorRight,distanceMiddle):
         self.leftDrive = leftDrive
         self.rightDrive = rightDrive
-        self.gyro1 = gyro1
-        self.gyro2 = gyro2
         self.drivetrain = dt
         self.colorRight = colorRight
         self.colorLeft = colorLeft
@@ -74,14 +72,11 @@ class Robot():
 
     def moveBy(self,distance): #move the robot forwards by a certain distance
 
-        #self.currentGyro = self.angle() #gets current gyro reading
-
         self.currentAngle = self.angle #gets current gyro reading
 
         self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
 
         if self.checkCone() == True: #if cone is in the way
-            #self.angle(self.currentGyro) # reset any gyro drift
             return False #robot has been unable to reach the final destination
 
         else: #if no cone in the way
@@ -93,14 +88,12 @@ class Robot():
                 for i in range(0,self.numberOfIterations):
 
                     if self.checkCone() == True:
-                        #self.angle(self.currentGyro) # reset any gyro drift
                         return False #robot has been unable to reach the final destination
 
                     self.drivetrain.drive_until(30,300) #move robot by 15cm
                     self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
-                #self.angle(self.currentGyro) # reset any gyro drift
                 return True #robot has been able to reach destination
 
             else: #if distance is not a multiple of 15
@@ -112,58 +105,15 @@ class Robot():
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
                     if self.checkCone() == True:
-                        #self.angle(self.currentGyro) # reset any gyro drift
                         return False #robot has been unable to reach the final destination
 
                 self.drivetrain.drive_until(30,self.remainder*10)
                 self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
                 self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
-                #self.angle(self.currentGyro) # reset any gyro drift
-
                 return True #robot has been able to reach destination
 
     def rotateTo(self,degrees): #rotate the robot to a certain angle
-
-        """if degrees < -180 or degrees > 180: #discards any calues that cannot be gyro readings
-            return False
-
-        self.currentGyro = self.angle() #grabs gyro current value
-        self.goalDegrees = degrees #sets goal degrees
-
-        if self.currentGyro < 0 and self.goalDegrees == 180: #couteract 180/-180 clash
-            self.goalDegrees = -180
-        elif self.currentGyro > 0 and self.goalDegrees == -180:
-            self.goalDegrees = 180
-
-        self.deltaR = self.goalDegrees - self.angle() # creates an initial value of deltaR
-
-        while self.deltaR != 0: #will keep turning until the current angle is the same as the desired angle
-
-            self.deltaR = self.goalDegrees - self.angle() #calulates a new value of delta R
-
-            #changes the deltaR vlaue to the desired value
-            if self.deltaR > 180:
-                self.deltaR = (self.deltaR - 180) * -1
-            elif self.deltaR < -180:
-                self.deltaR = (self.deltaR + 180) * -1
-
-            self.power = (self.deltaR / 360) * 100 #creates the power in terms of deltaR
-
-            #adds minimum power value and multiplies by -1 to conform to api ruling
-            if self.power > 0:
-                self.power = (self.power + 15) * -1 # 15 is a minimum power value
-            elif self.power < 0:
-                self.power = (self.power - 15) * -1
-
-            self.drivetrain.turn(self.power) #turns the robot
-
-        self.drivetrain.hold() #holds motors
-
-        if self.angle() != self.goalDegrees: #double check for any over step
-            self.rotateTo(self.goalDegrees)
-
-        return True # returns true as turn was a success"""
 
         if degrees < -180 or degrees > 180:
             return False #invalid goal angle
@@ -249,32 +199,6 @@ class Robot():
 
         return self.coordinates
 
-    """def startGyro(self): #calibrates both gyros
-        self.gyro1.calibrate(13)
-        self.gyro2.calibrate(13)
-        while self.gyro1.is_calibrating() and self.gyro2.is_calibrating(): #doesnt return from function until calibration complete
-            continue
-        self.gyro1.angle(0)
-        self.gyro2.angle(0)"""
-
-    """def angle(self, new_angle = None): #get and set gyro readings
-
-        if new_angle != None: #setting the gyro value
-            self.gyro1.angle(-1*new_angle)
-            self.gyro2.angle(-1*new_angle)
-            return None
-        else: #reading the gyro value
-            self.angle_1 = self.gyro1.angle() #grab values
-            self.angle_2 = self.gyro2.angle()
-
-            self.angle_3 = -1 * round((self.angle_1 + self.angle_2) / 2) #creates average of gyro values
-
-            if self.angle_3 == 0: #gyro-zero-ing counter measure
-                if math.fabs(self.angle_1) > 90 and math.fabs(self.angle_2) > 90:
-                    self.angle_3 = 180
-
-            return self.angle_3 #return angle"""
-
     # ---------------------------------------
 
     # DEV robot specific functions ----------
@@ -294,27 +218,19 @@ class Robot():
 LeftDrive   = vexiq.Motor(1)
 RightDrive  = vexiq.Motor(2, True) # Reverse Polarity
 TouchLed    = vexiq.TouchLed(3)
-Gyro1       = vexiq.Gyro(4)
-Gyro2       = vexiq.Gyro(5)
 MiddleUltra = vexiq.DistanceSensor(6, vexiq.UNIT_CM)
 LeftColor   = vexiq.ColorSensor(7) # hue
 RightColor  = vexiq.ColorSensor(8) # hue
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 254)
+
+import drivetrain
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 254.5)
 #endregion config
 
 # -------------------------------------------
 
 # Pre-program object creation ---------------
 
-robot = Robot(LeftDrive,RightDrive,Gyro1,Gyro2,dt,LeftColor,RightColor,MiddleUltra) #create robot class
-
-# -------------------------------------------
-
-# Pre-program calibration and startup -------
-TouchLed.named_color(3) #orange
-vexiq.lcd_write("Gyro Calibrating..") #output to lcd screen
-vexiq.lcd_write("DO NOT MOVE!",3) #output to lcd screen
-#robot.startGyro() #calibrate both gyros
+robot = Robot(LeftDrive,RightDrive,dt,LeftColor,RightColor,MiddleUltra) #create robot class
 
 # -------------------------------------------
 
