@@ -218,7 +218,7 @@ TouchLed    = vexiq.TouchLed(3)
 MiddleUltra = vexiq.DistanceSensor(6, vexiq.UNIT_CM)
 LeftColor   = vexiq.ColorSensor(7) # hue
 RightColor  = vexiq.ColorSensor(8) # hue
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 254.5) #wheel/track
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 252) #wheel/track
 #endregion config
 
 # -------------------------------------------
@@ -241,18 +241,44 @@ while True:
     if TouchLed.is_touch():
 
         TouchLed.named_color(3) #orange
+        
+        robot.moveBy(10)
+        robot.rotateTo(20)
 
-        robot.moveBy(30)
+        robot.moveBy(10)
+        robot.rotateTo(40)
+
+        robot.moveBy(10)
+        robot.rotateTo(60)
+
+        robot.moveBy(10)
+        robot.rotateTo(80)
+
+        robot.moveBy(10)
+        robot.rotateTo(100)
+
+        robot.moveBy(10)
+        robot.rotateTo(120)
+
+        robot.moveBy(10)
+        robot.rotateTo(140)
+
+        robot.moveBy(10)
+        robot.rotateTo(160)
+
+        robot.moveBy(10)
+        robot.rotateTo(180)
+        
+        """
+
         robot.rotateTo(90)
 
+        
         robot.moveBy(30)
         robot.rotateTo(180)
-
-        robot.moveBy(30)
-        robot.rotateTo(-90)
-
-        robot.moveBy(30)
+        robot.moveBy(60)
         robot.rotateTo(0)
+        robot.moveBy(30)"""
 
         sys.sleep(0.5)
 
