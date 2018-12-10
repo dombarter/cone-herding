@@ -191,7 +191,6 @@ class Robot():
             return True
 
 
-
     def liftArm(self):
         return None
 
@@ -250,15 +249,15 @@ class Robot():
 
         return self.coordinates
 
-    def startGyro(self): #calibrates both gyros
+    """def startGyro(self): #calibrates both gyros
         self.gyro1.calibrate(13)
         self.gyro2.calibrate(13)
         while self.gyro1.is_calibrating() and self.gyro2.is_calibrating(): #doesnt return from function until calibration complete
             continue
         self.gyro1.angle(0)
-        self.gyro2.angle(0)
+        self.gyro2.angle(0)"""
 
-    def angle(self, new_angle = None): #get and set gyro readings
+    """def angle(self, new_angle = None): #get and set gyro readings
 
         if new_angle != None: #setting the gyro value
             self.gyro1.angle(-1*new_angle)
@@ -274,7 +273,7 @@ class Robot():
                 if math.fabs(self.angle_1) > 90 and math.fabs(self.angle_2) > 90:
                     self.angle_3 = 180
 
-            return self.angle_3 #return angle
+            return self.angle_3 #return angle"""
 
     # ---------------------------------------
 
@@ -324,7 +323,7 @@ vexiq.lcd_write("DO NOT MOVE!",3) #output to lcd screen
 while True:
     TouchLed.named_color(9) #blue
 
-    vexiq.lcd_write("Gyro: " + str(robot.angle()),1)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
     vexiq.lcd_write("X Coord: " + str(robot.x),2)
     vexiq.lcd_write("Y Coord: " + str(robot.y),3)
 
@@ -333,34 +332,17 @@ while True:
 
         TouchLed.named_color(3) #orange
 
-        #result = robot.rotateTo(90)
-
-        #result = robot.moveBy(50)
-
-        #result = robot.moveBy(100)
-
-
+        robot.moveBy(30)
+        robot.rotateTo(90)
 
         robot.moveBy(30)
-
-        dt.turn_until(30,-90)
-
-        robot.moveBy(30)
-
-        dt.turn_until(30,-90)
+        robot.rotateTo(180)
 
         robot.moveBy(30)
-
-        dt.turn_until(30,-90)
+        robot.rotateTo(-90)
 
         robot.moveBy(30)
-
-        dt.turn_until(30,-90)
-        """
-        if result == True:
-            TouchLed.named_color(7) #green
-        else:
-            TouchLed.named_color(1)""" # red
+        robot.rotateTo(0)
 
         sys.sleep(0.5)
 
