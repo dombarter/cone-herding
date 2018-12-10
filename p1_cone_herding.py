@@ -25,6 +25,7 @@ class Robot():
 
     x = 0
     y = 0
+    angle = 0
     visitingHerdPoint = True
     carryingCone = False
     coneToCollect = False
@@ -73,11 +74,14 @@ class Robot():
 
     def moveBy(self,distance): #move the robot forwards by a certain distance
 
-        self.currentGyro = self.angle() #gets current gyro reading
+        #self.currentGyro = self.angle() #gets current gyro reading
+
+        self.currentAngle = self.angle #gets current gyro reading
+
         self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
 
         if self.checkCone() == True: #if cone is in the way
-            self.angle(self.currentGyro) # reset any gyro drift
+            #self.angle(self.currentGyro) # reset any gyro drift
             return False #robot has been unable to reach the final destination
 
         else: #if no cone in the way
@@ -89,14 +93,14 @@ class Robot():
                 for i in range(0,self.numberOfIterations):
 
                     if self.checkCone() == True:
-                        self.angle(self.currentGyro) # reset any gyro drift
+                        #self.angle(self.currentGyro) # reset any gyro drift
                         return False #robot has been unable to reach the final destination
 
                     self.drivetrain.drive_until(30,300) #move robot by 15cm
-                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentGyro)
+                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
-                self.angle(self.currentGyro) # reset any gyro drift
+                #self.angle(self.currentGyro) # reset any gyro drift
                 return True #robot has been able to reach destination
 
             else: #if distance is not a multiple of 15
@@ -104,24 +108,24 @@ class Robot():
                 for i in range(0,self.numberOfIterations):
 
                     self.drivetrain.drive_until(30,300)
-                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentGyro)
+                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
                     if self.checkCone() == True:
-                        self.angle(self.currentGyro) # reset any gyro drift
+                        #self.angle(self.currentGyro) # reset any gyro drift
                         return False #robot has been unable to reach the final destination
 
                 self.drivetrain.drive_until(30,self.remainder*10)
-                self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentGyro)
+                self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
                 self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
-                self.angle(self.currentGyro) # reset any gyro drift
+                #self.angle(self.currentGyro) # reset any gyro drift
 
                 return True #robot has been able to reach destination
 
     def rotateTo(self,degrees): #rotate the robot to a certain angle
 
-        if degrees < -180 or degrees > 180: #discards any calues that cannot be gyro readings
+        """if degrees < -180 or degrees > 180: #discards any calues that cannot be gyro readings
             return False
 
         self.currentGyro = self.angle() #grabs gyro current value
@@ -159,7 +163,34 @@ class Robot():
         if self.angle() != self.goalDegrees: #double check for any over step
             self.rotateTo(self.goalDegrees)
 
-        return True # returns true as turn was a success
+        return True # returns true as turn was a success"""
+
+        if degrees < -180 or degrees > 180:
+            return False #invalid goal angle
+        else:
+            self.currentAngle = self.angle #grabs the current angle of the robot
+            self.goalAngle = degrees #sets the goal degrees to a new variable
+
+            if self.currentAngle < 0 and self.goalAngle == 180: #couteract 180/-180 clash
+                self.goalAngle = -180
+            elif self.currentAngle > 0 and self.goalAngle == -180:
+                self.goalAngle = 180
+
+            self.deltaR = self.goalAngle - self.currentAngle #calculates how far the robot needs to rotate
+
+            #changes the deltaR value to the desired value (avoids 180/-180 cutoff)
+            if self.deltaR > 180:
+                self.deltaR = (self.deltaR - 180) * -1
+            elif self.deltaR < -180:
+                self.deltaR = (self.deltaR + 180) * -1
+
+            self.drivetrain.turn_until(25,-1*self.deltaR) #turn the robot
+
+            self.angle = self.goalAngle
+
+            return True
+
+
 
     def liftArm(self):
         return None
@@ -269,7 +300,7 @@ Gyro2       = vexiq.Gyro(5)
 MiddleUltra = vexiq.DistanceSensor(6, vexiq.UNIT_CM)
 LeftColor   = vexiq.ColorSensor(7) # hue
 RightColor  = vexiq.ColorSensor(8) # hue
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 176)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 254)
 #endregion config
 
 # -------------------------------------------
@@ -284,7 +315,7 @@ robot = Robot(LeftDrive,RightDrive,Gyro1,Gyro2,dt,LeftColor,RightColor,MiddleUlt
 TouchLed.named_color(3) #orange
 vexiq.lcd_write("Gyro Calibrating..") #output to lcd screen
 vexiq.lcd_write("DO NOT MOVE!",3) #output to lcd screen
-robot.startGyro() #calibrate both gyros
+#robot.startGyro() #calibrate both gyros
 
 # -------------------------------------------
 
@@ -302,30 +333,34 @@ while True:
 
         TouchLed.named_color(3) #orange
 
-        result = robot.rotateTo(90)
-        
-        result = robot.moveBy(50)
+        #result = robot.rotateTo(90)
+
+        #result = robot.moveBy(50)
 
         #result = robot.moveBy(100)
-        
-        """        
+
+
+
         robot.moveBy(30)
 
-        robot.rotateTo(90)
+        dt.turn_until(30,-90)
+
         robot.moveBy(30)
 
-        robot.rotateTo(180)
+        dt.turn_until(30,-90)
+
         robot.moveBy(30)
 
-        robot.rotateTo(-90)
+        dt.turn_until(30,-90)
+
         robot.moveBy(30)
 
-        result = robot.rotateTo(0)"""
-
+        dt.turn_until(30,-90)
+        """
         if result == True:
             TouchLed.named_color(7) #green
         else:
-            TouchLed.named_color(1) # red
+            TouchLed.named_color(1)""" # red
 
         sys.sleep(0.5)
 
