@@ -275,6 +275,123 @@ robot = Robot(dt,LeftColour,RightColour,MiddleUltra) #create robot class
 
 # -------------------------------------------
 
+# Test Functions ----------------------------
+
+def test_1():
+    robot.moveBy(30)
+
+    return None
+
+def test_2():
+    robot.moveBy(60) #with cone in the way
+
+    return None
+
+def test_3():
+    robot.moveBy(50)
+    robot.rotateTo(90)
+    robot.moveBy(50)
+    robot.rotateTo(180)
+    robot.moveBy(50)
+    robot.rotateTo(-90)
+    robot.moveBy(50)
+    robot.rotateTo(0)
+
+    return None
+
+def test_4():
+    for i in range(2):
+        robot.moveBy(50)
+        robot.rotateTo(90)
+        robot.moveBy(50)
+        robot.rotateTo(180)
+        robot.moveBy(50)
+        robot.rotateTo(-90)
+        robot.moveBy(50)
+        robot.rotateTo(0)
+
+    return None
+
+def test_5():
+    robot.moveBy(200)
+    robot.rotateTo(90)
+    robot.moveBy(200)
+    robot.rotateTo(180)
+    robot.moveBy(200)
+    robot.rotateTo(-90)
+    robot.moveBy(200)
+    robot.rotateTo(0)
+
+    return None
+
+def test_6():
+    robot.moveBy(100)
+    robot.rotateTo(180)
+    robot.moveBy(100)
+
+    return None
+
+def test_7():
+    robot.rotateTo(45)
+    robot.rotateTo(90)
+    robot.rotateTo(135)
+    robot.rotateTo(180)
+    robot.rotateTo(-135)
+    robot.rotateTo(-90)
+    robot.rotateTo(-45)
+    robot.rotateTo(0)
+
+    return None
+
+def test_8():
+    robot.rotateTo(180)
+    robot.rotateTo(0)
+
+    return None
+
+def test_9():
+    robot.rotateTo(90)
+    robot.rotateTo(180)
+    robot.rotateTo(-90)
+    robot.rotateTo(0)
+
+    return None
+
+def test_10():
+    robot.rotateTo(90)
+    robot.rotateTo(180)
+    robot.rotateTo(-90)
+    robot.rotateTo(0)
+
+    robot.rotateTo(90)
+    robot.rotateTo(180)
+    robot.rotateTo(-90)
+    robot.rotateTo(0)
+
+    return None
+
+def test_11():
+    robot.rotateTo(45)
+    robot.moveBy(10)
+    robot.rotateTo(90)
+    robot.moveBy(10)
+    robot.rotateTo(135)
+    robot.moveBy(10)
+    robot.rotateTo(180)
+    robot.moveBy(10)
+    robot.rotateTo(-135)
+    robot.moveBy(10)
+    robot.rotateTo(-90)
+    robot.moveBy(10)
+    robot.rotateTo(-45)
+    robot.moveBy(10)
+    robot.rotateTo(0)
+    robot.moveBy(10)
+
+    return None
+
+# -------------------------------------------
+
 # Main Program ------------------------------
 
 while True:
@@ -287,11 +404,24 @@ while True:
     if TouchLed.is_touch():
 
         sys.sleep(0.25)
-
         TouchLed.named_color(3) #orange
         TouchLed.blink() # blink the led
 
-        robot.rotateTo(180)
+        # Motion call ---------------
+
+        test_1()
+        #test_2()
+        #test_3()
+        #test_4()
+        #test_5()
+        #test_6()
+        #test_7()
+        #test_8()
+        #test_9()
+        #test_10()
+        #test_11()
+
+        # ---------------------------
 
         sys.sleep(0.5)
 
