@@ -63,15 +63,51 @@ class Robot():
     def returnToHerdPoint(self,herdpoint):
         return None
 
-    def moveToXYR(self,x,y,r):
-        return None
+    def moveToXYA(self,x,y,angle = None):
+        self.currentX = self.x
+        self.currentY = self.y
+
+        self.deltaX = math.fabs(x - self.currentX)
+        self.deltaY = math.fabs(y - self.currentY)
+
+        if self.deltaX == 0 and self.deltaY != 0:
+            if self.currentY > y:
+                self.rotateTo(180)
+            else:
+                self.rotateTo(0)
+        elif self.deltaX != 0 and self.deltaY == 0:
+            if self.currentX > x:
+                self.rotateTo(-90)
+            else:
+                self.rotateTo(90)
+        else:
+            if x > self.currentX and y > self.currentY:
+                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY))
+                self.rotateTo(self.rotation)
+            elif x > self.currentX and y < self.currentY:
+                self.rotation = math.degrees(math.atan(self.deltaY / self.deltaX)) + 90
+                self.rotateTo(self.rotation)
+            elif x < self.currentX and y > self.currentY:
+                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) - 180
+                self.rotateTo(self.rotation)
+            elif x < self.currentX and y < self.currentY:
+                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) * -1
+                self.rotateTo(self.rotation)
+
+        self.distance = self.calculateDeltaD(x,y,self.currentX,self.currentY)
+        self.motion = self.moveBy(self.distance)
+
+        if self.motion == False:
+            return False
+        else:
+            if angle != None:
+                self.rotateTo(angle)
+            return True
 
     def collectCone(self):
         return None
 
     def moveBy(self,distance): #move the robot forwards by a certain distance
-
-
 
         self.currentAngle = self.angle #gets current gyro reading
 
@@ -200,6 +236,12 @@ class Robot():
 
         return self.coordinates
 
+    def calculateDeltaD(self,goalX,goalY,currentX,currentY): #function to return distance between two coordinates
+        self.deltaX = math.fabs(currentX - goalX)
+        self.deltaY = math.fabs(currentY - goalY)
+        self.deltaD = math.fabs(math.sqrt((self.deltaX ** 2) + (self.deltaY ** 2)))
+        return self.deltaD
+
     # ---------------------------------------
 
     # DEV robot specific functions ----------
@@ -210,10 +252,6 @@ class Robot():
             return True
         else:
             return False
-
-    def move(self):
-        self.drivetrain.drive_until(30,300)
-        return True
 
 # -------------------------------------------
 
@@ -226,8 +264,6 @@ TouchLed    = vexiq.TouchLed(3)
 LeftColour  = vexiq.ColorSensor(4) # hue
 RightColour = vexiq.ColorSensor(5) # hue
 MiddleUltra = vexiq.DistanceSensor(6, vexiq.UNIT_CM)
-
-import drivetrain
 dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 210)
 #endregion config
 
@@ -249,11 +285,12 @@ while True:
     vexiq.lcd_write("Y Coord: " + str(robot.y),3)
 
     if TouchLed.is_touch():
-        
+
         sys.sleep(0.25)
-        
+
         TouchLed.named_color(3) #orange
-        
+        TouchLed.blink() # blink the led
+
         robot.rotateTo(180)
 
         sys.sleep(0.5)
