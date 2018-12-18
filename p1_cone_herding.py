@@ -1,5 +1,5 @@
 """__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":4},{"hwid":"6","name":"MiddleUltra","typeName":"distance_cm","extraConfig":null,"bufferIndex":5},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":210},"bufferIndex":6},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":7},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":8},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":9},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":10},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":11}]}"""
+{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"Arm","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":4},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":6},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":8},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":210},"bufferIndex":9},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":10},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":11},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":12},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":14}]}"""
 
 # external library imports ------------------
 
@@ -39,11 +39,17 @@ class Robot():
 
     # object instantiation ------------------
 
-    def __init__(self,dt,colorLeft,colorRight,distanceMiddle):
+    def __init__(self,dt,arm,claw,colorLeft,colorRight,distanceLeft,distanceRight,led):
         self.drivetrain = dt
         self.colorRight = colorRight
         self.colorLeft = colorLeft
-        self.distanceMiddle = distanceMiddle
+        self.distanceLeft = distanceLeft
+        self.distanceRight = distanceRight
+        self.led = led
+        self.arm = arm
+        self.claw = claw
+
+        self.arm.hold()
 
     # ---------------------------------------
 
@@ -248,7 +254,7 @@ class Robot():
 
     def checkCone(self): # a simple test function to check to see if there is anything in front of the robot
 
-        if self.distanceMiddle.distance() < 35:
+        if self.distanceLeft.distance() < 35 or self.distanceRight.distance() < 35:
             return True
         else:
             return False
@@ -260,10 +266,13 @@ class Robot():
 #region config
 LeftDrive   = vexiq.Motor(1)
 RightDrive  = vexiq.Motor(2, True) # Reverse Polarity
-TouchLed    = vexiq.TouchLed(3)
-LeftColour  = vexiq.ColorSensor(4) # hue
-RightColour = vexiq.ColorSensor(5) # hue
-MiddleUltra = vexiq.DistanceSensor(6, vexiq.UNIT_CM)
+Arm         = vexiq.Motor(3)
+Claw        = vexiq.Motor(4)
+LeftColour  = vexiq.ColorSensor(8) # hue
+RightColour = vexiq.ColorSensor(9) # hue
+UltraLeft   = vexiq.DistanceSensor(10, vexiq.UNIT_CM)
+UltraRight  = vexiq.DistanceSensor(11, vexiq.UNIT_CM)
+TouchLed    = vexiq.TouchLed(12)
 dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 210)
 #endregion config
 
@@ -271,7 +280,7 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 210)
 
 # Pre-program object creation ---------------
 
-robot = Robot(dt,LeftColour,RightColour,MiddleUltra) #create robot class
+robot = Robot(dt,Arm,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed) #create robot class
 
 # -------------------------------------------
 
@@ -400,6 +409,9 @@ while True:
     vexiq.lcd_write("Angle: " + str(robot.angle),1)
     vexiq.lcd_write("X Coord: " + str(robot.x),2)
     vexiq.lcd_write("Y Coord: " + str(robot.y),3)
+    
+    vexiq.lcd_write("LU: " + str(round(UltraLeft.distance())),4)
+    vexiq.lcd_write("RU: " + str(round(UltraRight.distance())),5)
 
     if TouchLed.is_touch():
 
@@ -409,14 +421,14 @@ while True:
 
         # Motion call ---------------
 
-        test_1()
+        #test_1()
         #test_2()
         #test_3()
         #test_4()
         #test_5()
         #test_6()
         #test_7()
-        #test_8()
+        test_8()
         #test_9()
         #test_10()
         #test_11()

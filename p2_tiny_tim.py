@@ -23,9 +23,9 @@ while True:
     elif joystick.axisC() > 15 or joystick.axisC() < -15:
         dt.turn(joystick.axisC() * -1)
     elif joystick.axisA() > 15:
-        Arm.run(-30)
+        Arm.run(-45)
     elif joystick.axisA() < -15:
-        Arm.run(30)
+        Arm.run(45)
     elif joystick.bFup():
         if clawOpen:
             clawOpen = False
