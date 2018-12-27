@@ -1,5 +1,5 @@
 """__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"Arm","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":4},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":6},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":8},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":211},"bufferIndex":9},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":10},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":11},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":12},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":14}]}"""
+{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"Arm","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":4},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":6},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":8},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":210},"bufferIndex":9},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":10},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":11},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":12},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":14}]}"""
 
 # external library imports ------------------
 
@@ -94,7 +94,7 @@ class Robot():
                 self.rotation = math.degrees(math.atan(self.deltaY / self.deltaX)) + 90
                 self.rotateTo(self.rotation)
             elif x < self.currentX and y > self.currentY:
-                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) - 90
+                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) * -1
                 self.rotateTo(self.rotation)
             elif x < self.currentX and y < self.currentY:
                 self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) - 180
@@ -163,7 +163,7 @@ class Robot():
             return False #invalid goal angle
         else:
             self.currentAngle = self.angle #grabs the current angle of the robot
-            self.goalAngle = degrees #sets the goal degrees to a new variable
+            self.goalAngle = round(degrees) #sets the goal degrees to a new variable
 
             if self.currentAngle < 0 and self.goalAngle == 180: #couteract 180/-180 clash
                 self.goalAngle = -180
@@ -275,7 +275,7 @@ UltraRight  = vexiq.DistanceSensor(11, vexiq.UNIT_CM)
 TouchLed    = vexiq.TouchLed(12)
 
 import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 211)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 210)
 #endregion config
 
 # -------------------------------------------
@@ -445,8 +445,7 @@ while True:
         #test_10()
         #test_11()
 
-        robot.moveToXYA(-60,0,0)
-        robot.moveToXYA(0,0,180)
+        robot.moveToXYA(-100,0,180)
 
         # ---------------------------
 

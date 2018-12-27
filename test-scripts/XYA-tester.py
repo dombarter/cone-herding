@@ -30,7 +30,7 @@ class turn():
                 self.rotation = math.degrees(math.atan(self.deltaY / self.deltaX)) + 90
                 print(self.rotation)
             elif x < self.currentX and y > self.currentY:
-                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) - 90
+                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) * -1
                 print(self.rotation)
             elif x < self.currentX and y < self.currentY:
                 self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) - 180
@@ -38,4 +38,4 @@ class turn():
 
 turner = turn(0,0)
 
-turner.rotate(100,50)
+turner.rotate(0,0)
