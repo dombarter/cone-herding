@@ -1,5 +1,5 @@
 """__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"Arm","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":4},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":6},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":8},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":210},"bufferIndex":9},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":10},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":11},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":12},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":14}]}"""
+{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"Arm","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":4},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":6},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":8},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":212},"bufferIndex":9},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":10},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":11},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":12},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":14}]}"""
 
 # external library imports ------------------
 
@@ -169,6 +169,10 @@ class Robot():
                 self.goalAngle = -180
             elif self.currentAngle > 0 and self.goalAngle == -180:
                 self.goalAngle = 180
+            elif self.currentAngle == 180 and self.goalAngle < 0:
+                self.currentAngle = -180
+            elif self.currentAngle == -180 and self.goalAngle > 0:
+                self.currentAngle = 180
 
             self.deltaR = self.goalAngle - self.currentAngle #calculates how far the robot needs to rotate
 
@@ -275,8 +279,10 @@ UltraRight  = vexiq.DistanceSensor(11, vexiq.UNIT_CM)
 TouchLed    = vexiq.TouchLed(12)
 
 import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 210)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 #endregion config
+
+# DRIVETRAIN: 210 for foam tiles
 
 # -------------------------------------------
 
@@ -344,13 +350,21 @@ def test_6():
 
 def test_7():
     robot.rotateTo(45)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
     robot.rotateTo(90)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
     robot.rotateTo(135)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
     robot.rotateTo(180)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
     robot.rotateTo(-135)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
     robot.rotateTo(-90)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
     robot.rotateTo(-45)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
     robot.rotateTo(0)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
 
     return None
 
@@ -439,13 +453,13 @@ while True:
         #test_4()
         #test_5()
         #test_6()
-        #test_7()
+        test_7()
         #test_8()
         #test_9()
         #test_10()
         #test_11()
 
-        robot.moveToXYA(-100,0,180)
+        #robot.moveToXYA(-100,0,180)
 
         # ---------------------------
 
