@@ -1,5 +1,5 @@
 """__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"Arm","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":4},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":6},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":8},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":212},"bufferIndex":9},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":10},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":11},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":12},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":14}]}"""
+{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":212},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
 
 # external library imports ------------------
 
@@ -39,17 +39,19 @@ class Robot():
 
     # object instantiation ------------------
 
-    def __init__(self,dt,arm,claw,colorLeft,colorRight,distanceLeft,distanceRight,led):
+    def __init__(self,dt,armL,armR,claw,colorLeft,colorRight,distanceLeft,distanceRight,led):
         self.drivetrain = dt
         self.colorRight = colorRight
         self.colorLeft = colorLeft
         self.distanceLeft = distanceLeft
         self.distanceRight = distanceRight
         self.led = led
-        self.arm = arm
+        self.armLeft = armL
+        self.armRight = armR
         self.claw = claw
 
-        self.arm.hold()
+        self.armLeft.hold()
+        self.armRight.hold()
 
     # ---------------------------------------
 
@@ -111,6 +113,10 @@ class Robot():
             return True
 
     def collectCone(self):
+        #align to cone
+        #calculate distance to cone
+        #drive to cone
+        #pick up cone
         return None
 
     def moveBy(self,distance): #move the robot forwards by a certain distance
@@ -195,10 +201,12 @@ class Robot():
         return None
 
     def closeClaw(self):
-        return None
+        self.claw.run_until_position(80,60,True)
+        return True
 
     def openClaw(self):
-        return None
+        self.claw.run_until_position(80,0,True)
+        return True
 
     def resolveReadings(self):
         return None
@@ -263,6 +271,50 @@ class Robot():
         else:
             return False
 
+    def alignToObject(self,repeat = False):
+
+        ur = round(self.distanceRight.distance())
+        ul = round(self.distanceLeft.distance())
+
+        if ur > 50 and ul > 50:
+            return None
+        else:
+            if repeat == True:
+                while repeat:
+                    ur = round(self.distanceRight.distance())
+                    ul = round(self.distanceLeft.distance())
+                    vexiq.lcd_write("LU: " + str(round(UltraLeft.distance())),4)
+                    vexiq.lcd_write("RU: " + str(round(UltraRight.distance())),5)
+                    if ur > ul:
+                        self.drivetrain.turn(10)
+                    elif ur < ul:
+                        self.drivetrain.turn(-10)
+                    else:
+                        self.drivetrain.hold()
+
+            elif repeat == False:
+                while ur != ul:
+                    if ur > ul:
+                        self.drivetrain.turn(10)
+                    elif ur < ul:
+                        self.drivetrain.turn(-10)
+                    else:
+                        break
+                    ur = round(self.distanceRight.distance())
+                    ul = round(self.distanceLeft.distance())
+                self.drivetrain.hold()
+
+                sys.sleep(0.7)
+
+                ur = round(self.distanceRight.distance())
+                ul = round(self.distanceLeft.distance())
+
+                if ur != ul:
+                    self.alignToObject()
+
+                return None
+
+
 # -------------------------------------------
 
 # Hardware setup and port selection ---------
@@ -270,8 +322,9 @@ class Robot():
 #region config
 LeftDrive   = vexiq.Motor(1)
 RightDrive  = vexiq.Motor(2, True) # Reverse Polarity
-Arm         = vexiq.Motor(3)
+ArmLeft     = vexiq.Motor(3)
 Claw        = vexiq.Motor(4)
+ArmRight    = vexiq.Motor(5, True) # Reverse Polarity
 LeftColour  = vexiq.ColorSensor(8) # hue
 RightColour = vexiq.ColorSensor(9) # hue
 UltraLeft   = vexiq.DistanceSensor(10, vexiq.UNIT_CM)
@@ -288,142 +341,12 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 
 # Pre-program object creation ---------------
 
-robot = Robot(dt,Arm,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed) #create robot class
+robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed) #create robot class
 
 # -------------------------------------------
 
 # Test Functions ----------------------------
 
-def test_1():
-    robot.moveBy(30)
-
-    return None
-
-def test_2():
-    robot.moveBy(60) #with cone in the way
-
-    return None
-
-def test_3():
-    robot.moveBy(50)
-    robot.rotateTo(90)
-    robot.moveBy(50)
-    robot.rotateTo(180)
-    robot.moveBy(50)
-    robot.rotateTo(-90)
-    robot.moveBy(50)
-    robot.rotateTo(0)
-
-    return None
-
-def test_4():
-    for i in range(2):
-        robot.moveBy(50)
-        robot.rotateTo(90)
-        robot.moveBy(50)
-        robot.rotateTo(180)
-        robot.moveBy(50)
-        robot.rotateTo(-90)
-        robot.moveBy(50)
-        robot.rotateTo(0)
-
-    return None
-
-def test_5():
-    robot.moveBy(200)
-    robot.rotateTo(90)
-    robot.moveBy(200)
-    robot.rotateTo(180)
-    robot.moveBy(200)
-    robot.rotateTo(-90)
-    robot.moveBy(200)
-    robot.rotateTo(0)
-
-    return None
-
-def test_6():
-    robot.moveBy(100)
-    robot.rotateTo(180)
-    robot.moveBy(100)
-
-    return None
-
-def test_7():
-    robot.rotateTo(45)
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    robot.rotateTo(90)
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    robot.rotateTo(135)
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    robot.rotateTo(180)
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    robot.rotateTo(-135)
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    robot.rotateTo(-90)
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    robot.rotateTo(-45)
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    robot.rotateTo(0)
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-
-    return None
-
-def test_8():
-    robot.rotateTo(180)
-    robot.rotateTo(0)
-
-    return None
-
-def test_9():
-    robot.rotateTo(90)
-    sys.sleep(1)
-    robot.rotateTo(180)
-    sys.sleep(1)
-    robot.rotateTo(-90)
-    sys.sleep(1)
-    robot.rotateTo(0)
-
-    return None
-
-def test_10():
-
-    robot.rotateTo(90)
-    sys.sleep(1)
-    robot.rotateTo(180)
-    sys.sleep(1)
-    robot.rotateTo(-90)
-    sys.sleep(1)
-    robot.rotateTo(0)
-    sys.sleep(1)
-    robot.rotateTo(90)
-    sys.sleep(1)
-    robot.rotateTo(180)
-    sys.sleep(1)
-    robot.rotateTo(-90)
-    sys.sleep(1)
-    robot.rotateTo(0)
-
-    return None
-
-def test_11():
-    robot.rotateTo(45)
-    robot.moveBy(10)
-    robot.rotateTo(90)
-    robot.moveBy(10)
-    robot.rotateTo(135)
-    robot.moveBy(10)
-    robot.rotateTo(180)
-    robot.moveBy(10)
-    robot.rotateTo(-135)
-    robot.moveBy(10)
-    robot.rotateTo(-90)
-    robot.moveBy(10)
-    robot.rotateTo(-45)
-    robot.moveBy(10)
-    robot.rotateTo(0)
-    robot.moveBy(10)
-
-    return None
 
 # -------------------------------------------
 
@@ -447,19 +370,13 @@ while True:
 
         # Motion call ---------------
 
-        #test_1()
-        #test_2()
-        #test_3()
-        #test_4()
-        #test_5()
-        #test_6()
-        test_7()
-        #test_8()
-        #test_9()
-        #test_10()
-        #test_11()
+        #robot.moveToXYA(30,30,-90)
+        #robot.moveToXYA(-30,-30,90)
+        #robot.moveToXYA(0,0,0)
 
-        #robot.moveToXYA(-100,0,180)
+        robot.openClaw()
+        sys.sleep(3)
+        robot.closeClaw()
 
         # ---------------------------
 
