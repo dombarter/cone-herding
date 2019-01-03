@@ -395,16 +395,26 @@ class Robot():
         return round(self.distance) #return value
 
     def alignToCone(self):
-        if self.lookingAtCone() == False and self.distanceLeft.distance() > 50 and self.distanceRight.distance() > 50:
+        if self.lookingAtCone() == False and self.distanceLeft.distance() > 40 and self.distanceRight.distance() > 40:
             return False
         else:
             if self.lookingAtCone() == True:
-                self.deltaD = round(self.calculateUltraDistance() - 24) # 24 being ideal claw drop distance
+                self.deltaD = round(self.calculateUltraDistance() - 22) # 24 being ideal claw drop distance
+                self.moveBy(self.deltaD,True)
+                self.deltaD = round(self.calculateUltraDistance() - 22) # 24 being ideal claw drop distance
                 self.moveBy(self.deltaD,True)
                 return True
             else:
-                #align
-
+                while self.lookingAtCone() == False:
+                    if self.distanceLeft.distance() > self.distanceRight.distance():
+                        self.rotateBy(6)
+                    else:
+                        self.rotateBy(-6)
+                    sys.sleep(0.4)
+                self.deltaD = round(self.calculateUltraDistance() - 22) # 24 being ideal claw drop distance
+                self.moveBy(self.deltaD,True)
+                self.deltaD = round(self.calculateUltraDistance() - 22) # 24 being ideal claw drop distance
+                self.moveBy(self.deltaD,True)
                 return True
 
     def lookingAtCone(self):
@@ -469,6 +479,7 @@ while True:
         # Motion call ---------------
 
         robot.alignToCone()
+        robot.collectCone()
 
         # ---------------------------
 
