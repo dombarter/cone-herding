@@ -58,6 +58,11 @@ class Robot():
         self.colorLeft.set_proximity_threshold(0)
         self.colorRight.set_proximity_threshold(0)
 
+        #self.claw.run(-30)
+        #sys.sleep(1)
+        #self.claw.hold()
+        #self.claw.reset_position()
+
 
     # ---------------------------------------
 
@@ -243,11 +248,11 @@ class Robot():
         return None
 
     def closeClaw(self):
-        self.claw.run_until_position(80,60,True)
+        self.claw.run_until_position(70,60,True)
         return True
 
     def openClaw(self):
-        self.claw.run_until_position(80,0,True)
+        self.claw.run_until_position(70,0,True)
         return True
 
     def resolveReadings(self):
@@ -402,11 +407,11 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 
 while True:
     robot.light("blue")
-    #vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    #vexiq.lcd_write("X Coord: " + str(robot.x),2)
-    #vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-    #vexiq.lcd_write("LU: " + str(round(UltraLeft.distance())),4)
-    #vexiq.lcd_write("RU: " + str(round(UltraRight.distance())),5)
+    vexiq.lcd_write("Angle: " + str(robot.angle),1)
+    vexiq.lcd_write("X Coord: " + str(robot.x),2)
+    vexiq.lcd_write("Y Coord: " + str(robot.y),3)
+    vexiq.lcd_write("LU: " + str(round(UltraLeft.distance())),4)
+    vexiq.lcd_write("RU: " + str(round(UltraRight.distance())),5)
 
     if robot.isActivated():
 
@@ -414,12 +419,18 @@ while True:
         robot.light("orange",True)
 
         # Motion call ---------------
-
+        """
         while robot.isActivated() == False:
             if robot.lookingAtCone():
                 vexiq.lcd_write("Found a cone :)")
             else:
-                vexiq.lcd_write("No cone found :(")
+                vexiq.lcd_write("No cone found :(")"""
+
+        robot.openClaw()
+        sys.sleep(2)
+        robot.closeClaw()
+        sys.sleep(5)
+        robot.openClaw()
 
         # ---------------------------
 
