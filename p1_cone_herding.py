@@ -27,13 +27,7 @@ class Robot():
     y = 0
     angle = 0
 
-    visitingHerdPoint = True
-    carryingCone = False
-    coneToCollect = False
-    distanceTravelled = 0
-    robotRadius = 15
-    wheelCircumference = 20
-    distanceSensorSpacing = 5
+    robotRadius = 7
 
     colours = {"off":0,"red":1,"red_orange":2,"orange":3,"yellow_orange":4,"yellow":5,"yellow_green":6,"green":7,"blue_green":8,"blue":9,"blue_violet":10,"violet":11,"red_violet":12,"white":13}
 
@@ -69,11 +63,15 @@ class Robot():
     # basic mathematical functions ----------
 
     def intify(self,number): #used to convert from float to int
-        num = round(number)
-        iterate = 0
-        while iterate != num:
-            iterate+=1
-        return iterate
+        self.num = round(number)
+        self.iterate = 0
+        if number > 0:
+            while self.iterate != self.num:
+                self.iterate+=1
+        else:
+            while self.iterate != self.num:
+                self.iterate-=1
+        return self.iterate
 
     # ---------------------------------------
 
@@ -149,49 +147,60 @@ class Robot():
         sys.sleep(0.25)
         return None
 
-    def moveBy(self,distance): #move the robot forwards by a certain distance
+    def moveBy(self,distance,ignoreCone = False): #move the robot forwards by a certain distance
 
         self.currentAngle = self.angle #gets current gyro reading
 
         self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
 
-        if self.checkCone() == True: #if cone is in the way
-            return False #robot has been unable to reach the final destination
+        if ignoreCone == False:
+            if self.checkCone() == True: #if cone is in the way
+                return False #robot has been unable to reach the final destination
 
         else: #if no cone in the way
+
             self.numberOfIterations = self.intify(math.floor(self.cm / 30))
             self.remainder = self.intify(self.cm % 30)
 
-            if self.remainder == 0: #if distance is a multiple of 15
+            if self.numberOfIterations < 0: #going backwards!
+                self.drivetrain.drive_until(30,self.cm*10) # no need to check for cones so just go for it
 
-                for i in range(0,self.numberOfIterations):
-
-                    if self.checkCone() == True:
-                        return False #robot has been unable to reach the final destination
-
-                    self.drivetrain.drive_until(30,300) #move robot by 15cm
-                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
-                    self.x , self.y = self.resolveResult.x , self.resolveResult.y
-
-                vexiq.lcd_write("Hello!")
-                return True #robot has been able to reach destination
-
-            else: #if distance is not a multiple of 15
-
-                for i in range(0,self.numberOfIterations):
-
-                    self.drivetrain.drive_until(30,300)
-                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
-                    self.x , self.y = self.resolveResult.x , self.resolveResult.y
-
-                    if self.checkCone() == True:
-                        return False #robot has been unable to reach the final destination
-
-                self.drivetrain.drive_until(30,self.remainder*10)
-                self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
+                self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentAngle)
                 self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
-                return True #robot has been able to reach destination
+            else:
+
+                if self.remainder == 0: #if distance is a multiple of 15
+
+                    for i in range(0,self.numberOfIterations):
+
+                        if ignoreCone == False:
+                            if self.checkCone() == True: #if cone is in the way
+                                return False #robot has been unable to reach the final destination
+
+                        self.drivetrain.drive_until(30,300) #move robot by 15cm
+                        self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
+                        self.x , self.y = self.resolveResult.x , self.resolveResult.y
+
+                    return True #robot has been able to reach destination
+
+                else: #if distance is not a multiple of 15
+
+                    for i in range(0,self.numberOfIterations):
+
+                        self.drivetrain.drive_until(30,300)
+                        self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
+                        self.x , self.y = self.resolveResult.x , self.resolveResult.y
+
+                        if ignoreCone == False:
+                            if self.checkCone() == True: #if cone is in the way
+                                return False #robot has been unable to reach the final destination
+
+                    self.drivetrain.drive_until(30,self.remainder*10)
+                    self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
+                    self.x , self.y = self.resolveResult.x , self.resolveResult.y
+
+                    return True #robot has been able to reach destination
 
     def rotateBy(self,degrees): #turn the robot, positive for right, negative for left
 
@@ -272,7 +281,7 @@ class Robot():
 
     def resolveXY(self,xCoord,yCoord,distance,rotation): #function to update distaplacement of the robot by calculating new coordinates
 
-        self.distance = math.fabs(distance)
+        self.distance = distance
 
         self.radians = math.radians(rotation) #turns the gyro reading into radians
 
@@ -330,7 +339,7 @@ class Robot():
         else:
             return False
 
-    def alignToObject(self,repeat = False):
+    def alignToObjectOld(self,repeat = False):
 
         ur = round(self.distanceRight.distance())
         ul = round(self.distanceLeft.distance())
@@ -373,8 +382,33 @@ class Robot():
 
                 return None
 
+    def calculateUltraDistance(self): #gets the distance from the displacement to the cone
+        self.leftUltra = self.distanceLeft.distance() #grab both distance values
+        self.rightUltra = self.distanceRight.distance()
+
+        self.average = round((self.leftUltra + self.rightUltra) / 2) #create an average of the values
+
+        self.distance = math.sqrt((self.average ** 2) - (5**2)) #perform some cheeky pythagoras
+
+        self.distance = self.distance + self.robotRadius #add on robot radius (means the distance is relative to x,y coord)
+
+        return round(self.distance) #return value
+
+    def alignToCone(self):
+        if self.lookingAtCone() == False and self.distanceLeft.distance() > 50 and self.distanceRight.distance() > 50:
+            return False
+        else:
+            if self.lookingAtCone() == True:
+                self.deltaD = round(self.calculateUltraDistance() - 24) # 24 being ideal claw drop distance
+                self.moveBy(self.deltaD,True)
+                return True
+            else:
+                #align
+
+                return True
+
     def lookingAtCone(self):
-        if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
+        if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5 or self.colorLeft.named_color() == 6) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5 or self.colorRight.named_color() == 6):
             return True
         else:
             return False
@@ -420,11 +454,12 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 
 while True:
     robot.light("blue")
+
     vexiq.lcd_write("Angle: " + str(robot.angle),1)
     vexiq.lcd_write("X Coord: " + str(robot.x),2)
     vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-    vexiq.lcd_write("LU: " + str(round(UltraLeft.distance())),4)
-    vexiq.lcd_write("RU: " + str(round(UltraRight.distance())),5)
+    vexiq.lcd_write("Distance: " + str(robot.calculateUltraDistance()) + " cm",4)
+    vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),5)
 
     if robot.isActivated():
 
@@ -432,20 +467,8 @@ while True:
         robot.light("orange",True)
 
         # Motion call ---------------
-        """
-        while robot.isActivated() == False:
-            if robot.lookingAtCone():
-                vexiq.lcd_write("Found a cone :)")
-            else:
-                vexiq.lcd_write("No cone found :(")"""
-        """
-        robot.openClaw()
-        sys.sleep(2)
-        robot.closeClaw()
-        sys.sleep(5)
-        robot.openClaw()"""
 
-        robot.collectCone()
+        robot.alignToCone()
 
         # ---------------------------
 
