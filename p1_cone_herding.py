@@ -139,10 +139,14 @@ class Robot():
             return True
 
     def collectCone(self): #collect a cone
-        #align to cone
-        #calculate distance to cone
-        #drive to cone
-        #pick up cone
+        self.openClaw()
+        sys.sleep(0.25)
+        self.lowerArm()
+        sys.sleep(0.25)
+        self.closeClaw()
+        sys.sleep(0.25)
+        self.liftArm()
+        sys.sleep(0.25)
         return None
 
     def moveBy(self,distance): #move the robot forwards by a certain distance
@@ -242,9 +246,17 @@ class Robot():
             return True
 
     def liftArm(self):
+        self.armLeft.run_to_position(100,-20,True)
+        self.armRight.run_to_position(100,-20,True)
+        while self.armLeft.position() > -15 and self.armRight.position() > -15:
+            continue
         return None
 
     def lowerArm(self):
+        self.armLeft.run_to_position(30,262,True)
+        self.armRight.run_to_position(30,262,True)
+        while self.armLeft.position() < 260 and self.armRight.position() < 260:
+            continue
         return None
 
     def closeClaw(self):
@@ -386,6 +398,7 @@ TouchLed    = vexiq.TouchLed(12)
 
 import drivetrain
 dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
+
 #endregion config
 
 # DRIVETRAIN: 210 for foam tiles
@@ -425,12 +438,14 @@ while True:
                 vexiq.lcd_write("Found a cone :)")
             else:
                 vexiq.lcd_write("No cone found :(")"""
-
+        """
         robot.openClaw()
         sys.sleep(2)
         robot.closeClaw()
         sys.sleep(5)
-        robot.openClaw()
+        robot.openClaw()"""
+
+        robot.collectCone()
 
         # ---------------------------
 
