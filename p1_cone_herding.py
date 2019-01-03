@@ -55,6 +55,10 @@ class Robot():
         self.armLeft.hold()
         self.armRight.hold()
 
+        self.colorLeft.set_proximity_threshold(0)
+        self.colorRight.set_proximity_threshold(0)
+
+
     # ---------------------------------------
 
     # basic mathematical functions ----------
@@ -352,6 +356,12 @@ class Robot():
 
                 return None
 
+    def lookingAtCone(self):
+        if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
+            return True
+        else:
+            return False
+
 
 # -------------------------------------------
 
@@ -392,11 +402,11 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 
 while True:
     robot.light("blue")
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    vexiq.lcd_write("X Coord: " + str(robot.x),2)
-    vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-    vexiq.lcd_write("LU: " + str(round(UltraLeft.distance())),4)
-    vexiq.lcd_write("RU: " + str(round(UltraRight.distance())),5)
+    #vexiq.lcd_write("Angle: " + str(robot.angle),1)
+    #vexiq.lcd_write("X Coord: " + str(robot.x),2)
+    #vexiq.lcd_write("Y Coord: " + str(robot.y),3)
+    #vexiq.lcd_write("LU: " + str(round(UltraLeft.distance())),4)
+    #vexiq.lcd_write("RU: " + str(round(UltraRight.distance())),5)
 
     if robot.isActivated():
 
@@ -405,15 +415,11 @@ while True:
 
         # Motion call ---------------
 
-        robot.rotateBy(360)
-        vexiq.lcd_write("Angle: " + str(robot.angle),1)
-        sys.sleep(2)
-        robot.rotateBy(-370)
-        sys.sleep(2)
-        vexiq.lcd_write("Angle: " + str(robot.angle),1)
-        robot.rotateTo(-30)
-        sys.sleep(2)
-
+        while robot.isActivated() == False:
+            if robot.lookingAtCone():
+                vexiq.lcd_write("Found a cone :)")
+            else:
+                vexiq.lcd_write("No cone found :(")
 
         # ---------------------------
 
