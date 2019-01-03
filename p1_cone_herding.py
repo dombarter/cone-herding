@@ -70,23 +70,23 @@ class Robot():
 
     # NON-DEV robot specific functions ------
 
-    def isActivated(self): #will return if the led is pressed
+    def isActivated(self): #will return true if the led is pressed
         if self.led.is_touch():
             return True
         else:
             return False
 
-    def light(self,colour,blink = False):
+    def light(self,colour,blink = False): #control the led
         self.code = self.colours[colour]
         self.led.named_color(self.code)
         if blink == True:
             self.led.blink()
         return None
 
-    def returnToHerdPoint(self,herdpoint):
+    def returnToHerdPoint(self,herdpoint): #return the robot to the herd point
         return None
 
-    def moveToXYA(self,x,y,angle = None):
+    def moveToXYA(self,x,y,angle = None): #move the robot to an x coord, y coord and angle of rotation
         self.currentX = self.x
         self.currentY = self.y
 
@@ -129,7 +129,7 @@ class Robot():
                 self.rotateTo(angle)
             return True
 
-    def collectCone(self):
+    def collectCone(self): #collect a cone
         #align to cone
         #calculate distance to cone
         #drive to cone
@@ -179,6 +179,27 @@ class Robot():
                 self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
                 return True #robot has been able to reach destination
+
+    def rotateBy(self,degrees): #turn the robot, positive for right, negative for left
+
+        self.deltaA = round(degrees)
+        self.drivetrain.turn_until(22,-1*self.deltaA) #turn the robot
+
+        if self.deltaA > 0: #remove any excess 360 rotations
+            while self.deltaA >= 360:
+                self.deltaA = self.deltaA - 360
+        elif self.deltaA < 0:
+            while self.deltaA <= -360:
+                self.deltaA = self.deltaA + 360
+
+        self.newAngle = self.angle + self.deltaA #calculate final angle with v = u + d calculation
+
+        if self.newAngle > 180: #trim difference at 180/-180 border
+            self.newAngle = self.newAngle - 360
+        if self.newAngle < -180:
+            self.newAngle = self.newAngle + 360
+
+        self.angle = round(self.newAngle) #set new angle
 
     def rotateTo(self,degrees): #rotate the robot to a certain angle
 
@@ -383,6 +404,16 @@ while True:
         robot.light("orange",True)
 
         # Motion call ---------------
+
+        robot.rotateBy(360)
+        vexiq.lcd_write("Angle: " + str(robot.angle),1)
+        sys.sleep(2)
+        robot.rotateBy(-370)
+        sys.sleep(2)
+        vexiq.lcd_write("Angle: " + str(robot.angle),1)
+        robot.rotateTo(-30)
+        sys.sleep(2)
+
 
         # ---------------------------
 
