@@ -35,6 +35,8 @@ class Robot():
     wheelCircumference = 20
     distanceSensorSpacing = 5
 
+    colours = {"off":0,"red":1,"red_orange":2,"orange":3,"yellow_orange":4,"yellow":5,"yellow_green":6,"green":7,"blue_green":8,"blue":9,"blue_violet":10,"violet":11,"red_violet":12,"white":13}
+
     # ---------------------------------------
 
     # object instantiation ------------------
@@ -67,6 +69,19 @@ class Robot():
     # ---------------------------------------
 
     # NON-DEV robot specific functions ------
+
+    def isActivated(self): #will return if the led is pressed
+        if self.led.is_touch():
+            return True
+        else:
+            return False
+
+    def light(self,colour,blink = False):
+        self.code = self.colours[colour]
+        self.led.named_color(self.code)
+        if blink == True:
+            self.led.blink()
+        return None
 
     def returnToHerdPoint(self,herdpoint):
         return None
@@ -108,6 +123,8 @@ class Robot():
         if self.motion == False:
             return False
         else:
+            self.x = x
+            self.y = y
             if angle != None:
                 self.rotateTo(angle)
             return True
@@ -353,30 +370,19 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 # Main Program ------------------------------
 
 while True:
-    TouchLed.named_color(9) #blue
-
+    robot.light("blue")
     vexiq.lcd_write("Angle: " + str(robot.angle),1)
     vexiq.lcd_write("X Coord: " + str(robot.x),2)
     vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-
     vexiq.lcd_write("LU: " + str(round(UltraLeft.distance())),4)
     vexiq.lcd_write("RU: " + str(round(UltraRight.distance())),5)
 
-    if TouchLed.is_touch():
+    if robot.isActivated():
 
-        sys.sleep(0.25)
-        TouchLed.named_color(3) #orange
-        TouchLed.blink() # blink the led
+        sys.sleep(0.2)
+        robot.light("orange",True)
 
         # Motion call ---------------
-
-        #robot.moveToXYA(30,30,-90)
-        #robot.moveToXYA(-30,-30,90)
-        #robot.moveToXYA(0,0,0)
-
-        robot.openClaw()
-        sys.sleep(3)
-        robot.closeClaw()
 
         # ---------------------------
 
