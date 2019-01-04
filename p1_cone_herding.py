@@ -93,7 +93,7 @@ class Robot():
     def returnToHerdPoint(self,herdpoint): #return the robot to the herd point
         return None
 
-    def moveToXYA(self,x,y,angle = None): #move the robot to an x coord, y coord and angle of rotation
+    def moveToXYA(self,x,y,angle = None,ignoreCone = False): #move the robot to an x coord, y coord and angle of rotation
         self.currentX = self.x
         self.currentY = self.y
 
@@ -115,7 +115,7 @@ class Robot():
                 self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY))
                 self.rotateTo(self.rotation)
             elif x > self.currentX and y < self.currentY:
-                self.rotation = math.degrees(math.atan(self.deltaY / self.deltaX)) + 90
+                self.rotation = 180 - math.degrees(math.atan(self.deltaX / self.deltaY))
                 self.rotateTo(self.rotation)
             elif x < self.currentX and y > self.currentY:
                 self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) * -1
@@ -125,7 +125,7 @@ class Robot():
                 self.rotateTo(self.rotation)
 
         self.distance = self.calculateDeltaD(x,y,self.currentX,self.currentY)
-        self.motion = self.moveBy(self.distance)
+        self.motion = self.moveBy(self.distance,ignoreCone)
 
         if self.motion == False:
             return False
@@ -142,6 +142,15 @@ class Robot():
         self.lowerArm()
         sys.sleep(0.25)
         self.closeClaw()
+        sys.sleep(0.25)
+        self.liftArm()
+        sys.sleep(0.25)
+        return None
+
+    def deliverCone(self): #deliver a cone
+        self.lowerArm()
+        sys.sleep(0.25)
+        self.openClaw()
         sys.sleep(0.25)
         self.liftArm()
         sys.sleep(0.25)
@@ -242,9 +251,9 @@ class Robot():
 
             #changes the deltaR value to the desired value (avoids 180/-180 cutoff)
             if self.deltaR > 180:
-                self.deltaR = (self.deltaR - 180) * -1
+                self.deltaR = (self.deltaR - 360)
             elif self.deltaR < -180:
-                self.deltaR = (self.deltaR + 180) * -1
+                self.deltaR = (self.deltaR + 360)
 
             self.drivetrain.turn_until(22,-1*self.deltaR) #turn the robot
 
@@ -409,7 +418,6 @@ class Robot():
                         self.rotateBy(-8)
                         vexiq.lcd_write(self.angle)
                     sys.sleep(0.75)
-                sys.sleep(1.5)
                 self.deltaD = round(self.calculateUltraDistance() - 22) # 24 being ideal claw drop distance
                 self.moveBy(self.deltaD,True)
                 return True
@@ -420,6 +428,14 @@ class Robot():
         else:
             return False
 
+    def updateScreen(self,debugDelay = 0):
+        vexiq.lcd_write("Angle: " + str(robot.angle),1)
+        vexiq.lcd_write("X Coord: " + str(robot.x),2)
+        vexiq.lcd_write("Y Coord: " + str(robot.y),3)
+        vexiq.lcd_write("Distance: " + str(robot.calculateUltraDistance()) + " cm",4)
+        vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),5)
+        sys.sleep(debugDelay)
+        return None
 
 # -------------------------------------------
 
@@ -475,31 +491,11 @@ while True:
 
         # Motion call ---------------
 
-        """robot.alignToCone()
-        robot.collectCone()
-        robot.moveToXYA(0,0,0)"""
-        """
-        robot.moveToXYA(0,0,180)
-        vexiq.lcd_write("Angle: " + str(robot.angle),1)
-        vexiq.lcd_write("X Coord: " + str(robot.x),2)
-        vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-        sys.sleep(3)
-        robot.rotateBy(90)
-        vexiq.lcd_write("Angle: " + str(robot.angle),1)
-        vexiq.lcd_write("X Coord: " + str(robot.x),2)
-        vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-        sys.sleep(3)"""
-
-        robot.moveToXYA(-30,20,45)
-        vexiq.lcd_write("Angle: " + str(robot.angle),1)
-        vexiq.lcd_write("X Coord: " + str(robot.x),2)
-        vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-        sys.sleep(3)
-        robot.moveToXYA(0,0,0)
-        vexiq.lcd_write("Angle: " + str(robot.angle),1)
-        vexiq.lcd_write("X Coord: " + str(robot.x),2)
-        vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-        sys.sleep(3)
+        robot.rotateTo(90)
+        robot.updateScreen(3)
+        robot.rotateTo(-170)
+        robot.updateScreen(3)
+        robot.rotateTo(0)
 
         # ---------------------------
 
