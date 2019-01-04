@@ -412,10 +412,10 @@ class Robot():
             else:
                 while self.lookingAtCone() == False:
                     if self.distanceLeft.distance() > self.distanceRight.distance():
-                        self.rotateBy(8)
+                        self.rotateBy(10)
                         vexiq.lcd_write(self.angle)
                     else:
-                        self.rotateBy(-8)
+                        self.rotateBy(-10)
                         vexiq.lcd_write(self.angle)
                     sys.sleep(0.75)
                 self.deltaD = round(self.calculateUltraDistance() - 22) # 24 being ideal claw drop distance
@@ -491,11 +491,11 @@ while True:
 
         # Motion call ---------------
 
-        robot.rotateTo(90)
-        robot.updateScreen(3)
-        robot.rotateTo(-170)
-        robot.updateScreen(3)
-        robot.rotateTo(0)
+        robot.moveToXYA(0,30,90,True)
+        robot.alignToCone()
+        robot.collectCone()
+        robot.moveToXYA(0,0,0,True)
+        robot.deliverCone()
 
         # ---------------------------
 
