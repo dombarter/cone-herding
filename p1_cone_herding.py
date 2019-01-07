@@ -97,8 +97,8 @@ class Robot():
         self.currentX = self.x
         self.currentY = self.y
 
-        self.deltaX = math.fabs(x - self.currentX)
-        self.deltaY = math.fabs(y - self.currentY)
+        self.deltaX = float(math.fabs(x - self.currentX))
+        self.deltaY = float(math.fabs(y - self.currentY))
 
         if self.deltaX == 0 and self.deltaY != 0:
             if self.currentY > y:
@@ -428,12 +428,18 @@ class Robot():
         else:
             return False
 
-    def updateScreen(self,debugDelay = 0):
-        vexiq.lcd_write("Angle: " + str(robot.angle),1)
-        vexiq.lcd_write("X Coord: " + str(robot.x),2)
-        vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-        vexiq.lcd_write("Distance: " + str(robot.calculateUltraDistance()) + " cm",4)
-        vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),5)
+    def debug(self,updateScreen = True,debugDelay = 0,color = None):
+        if updateScreen == True:
+            vexiq.lcd_write("Angle: " + str(robot.angle),1)
+            vexiq.lcd_write("X Coord: " + str(robot.x),2)
+            vexiq.lcd_write("Y Coord: " + str(robot.y),3)
+            vexiq.lcd_write("Distance: " + str(robot.calculateUltraDistance()) + " cm",4)
+            vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),5)
+
+        if color != None:
+            self.code = self.colours[color]
+            self.led.named_color(self.code)
+
         sys.sleep(debugDelay)
         return None
 
@@ -455,7 +461,6 @@ TouchLed    = vexiq.TouchLed(12)
 
 import drivetrain
 dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
-
 #endregion config
 
 # DRIVETRAIN: 210 for foam tiles
@@ -491,11 +496,8 @@ while True:
 
         # Motion call ---------------
 
-        robot.moveToXYA(0,30,90,True)
-        robot.alignToCone()
-        robot.collectCone()
+        robot.moveToXYA(20,100,180,True)
         robot.moveToXYA(0,0,0,True)
-        robot.deliverCone()
 
         # ---------------------------
 
