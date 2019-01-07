@@ -496,8 +496,12 @@ while True:
 
         # Motion call ---------------
 
-        robot.moveToXYA(20,100,180,True)
-        robot.moveToXYA(0,0,0,True)
+        robot.moveToXYA(0,150)
+        robot.alignToCone()
+        robot.collectCone()
+        robot.moveToXYA(0,0,0)
+        robot.deliverCone()
+        #
 
         # ---------------------------
 
