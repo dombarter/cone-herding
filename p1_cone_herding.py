@@ -512,7 +512,7 @@ while True:
                 robot.alignToCone()
                 robot.collectCone()
                 robot.light("orange",True)
-                robot.moveToXYA(0,0,0,True)
+                robot.moveToXYA(0,0,None)
                 robot.deliverCone()
                 del robot.allCones[0]
             else:
