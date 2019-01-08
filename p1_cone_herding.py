@@ -18,17 +18,23 @@ class XYCoordinates:
         self.x = 0
         self.y = 0
 
+# Cone class
+class Cone:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+        self.herded = False
+
 # Robot class
-class Robot():
+class Robot:
 
     # public properties----------------------
 
     x = 0
     y = 0
     angle = 0
-
     robotRadius = 7
-
+    allCones = []
     colours = {"off":0,"red":1,"red_orange":2,"orange":3,"yellow_orange":4,"yellow":5,"yellow_green":6,"green":7,"blue_green":8,"blue":9,"blue_violet":10,"violet":11,"red_violet":12,"white":13}
 
     # ---------------------------------------
@@ -51,11 +57,6 @@ class Robot():
 
         self.colorLeft.set_proximity_threshold(0)
         self.colorRight.set_proximity_threshold(0)
-
-        #self.claw.run(-30)
-        #sys.sleep(1)
-        #self.claw.hold()
-        #self.claw.reset_position()
 
 
     # ---------------------------------------
@@ -341,7 +342,7 @@ class Robot():
     # DEV robot specific functions ----------
 
     def checkDistance(self,getLower = False): # a simple test function to check to see if there is anything in front of the robot
-        if self.distanceLeft.distance() < 50 or self.distanceRight.distance() < 50:
+        if self.distanceLeft.distance() < 45 or self.distanceRight.distance() < 45:
             if getLower == True:
                 if self.distanceLeft.distance() < self.distanceRight.distance():
                     return round(self.distanceLeft.distance())
@@ -364,11 +365,11 @@ class Robot():
         return round(self.distance) #return value
 
     def alignToCone(self):
-        if self.lookingAtCone() == False and self.distanceLeft.distance() > 40 and self.distanceRight.distance() > 40:
+        if self.lookingAtCone() == False and self.distanceLeft.distance() >= 45 and self.distanceRight.distance() >= 45:
             return False
         else:
-            if self.checkDistance(True) > 30:
-                self.deltaD = round(self.calculateUltraDistance() - 30)
+            if self.checkDistance(True) > 25:
+                self.deltaD = round(self.calculateUltraDistance() - 25)
                 self.moveBy(self.deltaD,True)
 
             self.maxSwingAmount = 5
@@ -378,19 +379,19 @@ class Robot():
             else:
                 self.directionOfSwing = -1
 
-            for swing in range(3, self.maxSwingAmount + 3):
+            for swing in range(4, self.maxSwingAmount + 4):
                 for turn in range(0,swing):
                     if self.lookingAtCone():
                         break
-                    self.rotateBy(self.directionOfSwing * 10)
-                    sys.sleep(0.75)
+                    self.rotateBy(self.directionOfSwing * 6)
+                    sys.sleep(0.6)
                 if self.lookingAtCone():
                     break
                 self.directionOfSwing = self.directionOfSwing * -1
 
             self.deltaD = round(self.calculateUltraDistance() - 20)
             self.moveBy(self.deltaD,True)
-            sys.sleep(1.5)
+            sys.sleep(1)
             self.deltaD = round(self.calculateUltraDistance() - 20)
             self.moveBy(self.deltaD,True)
             return True
@@ -414,6 +415,11 @@ class Robot():
 
         sys.sleep(debugDelay)
         return None
+
+    def recordNewCone(self,distance):
+        self.coneLocation = self.resolveXY(self.x,self.y,distance,self.angle)
+        self.allCones.append(Cone(self.coneLocation.x,self.coneLocation.y))
+        return True
 
 # -------------------------------------------
 
@@ -460,6 +466,8 @@ while True:
     vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
     vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
     vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),4)
+    vexiq.lcd_write("Cones: " + str(len(robot.allCones)),5)
+
 
     if robot.isActivated():
 
@@ -468,16 +476,27 @@ while True:
 
         # Motion call ---------------
 
-        result = robot.moveToXYA(0,150)
-        if result == False:
-            robot.light("green",True)
-            robot.alignToCone()
-            robot.collectCone()
-            robot.light("orange",True)
-        robot.moveToXYA(0,0,0,True)
-        if result == False:
-            robot.deliverCone()
-        #
+        if len(robot.allCones) == 0:
+            result = robot.moveToXYA(0,150)
+            if result == False:
+                robot.light("green",True)
+                robot.alignToCone()
+                robot.recordNewCone(robot.calculateUltraDistance())
+                robot.light("orange",True)
+                robot.moveToXYA(0,0,0,True)
+        else:
+            cone = robot.allCones[0]
+            result = robot.moveToXYA(cone.x,cone.y)
+            if result == False:
+                robot.light("green",True)
+                robot.alignToCone()
+                robot.collectCone()
+                robot.light("orange",True)
+                robot.moveToXYA(0,0,0,True)
+                robot.deliverCone()
+                del robot.allCones[0]
+            else:
+                robot.moveToXYA(0,0,0,True)
 
         # ---------------------------
 
