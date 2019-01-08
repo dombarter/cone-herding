@@ -14,34 +14,38 @@ import math
 
 # XYCoordinates class
 class XYCoordinates:
-    def __init__(self):
-        self.x = 0
-        self.y = 0
+    def __init__(self): #intiation function
+        self.x = 0 #x coordinate
+        self.y = 0 #y coordinate
+        return None
 
 # Cone class
 class Cone:
-    def __init__(self,x,y):
-        self.x = x
-        self.y = y
-        self.herded = False
+    def __init__(self,x,y): #initiation function
+        self.x = x # x coordinate
+        self.y = y # y cordinate
+        self.herded = False # shows whether the cone has been herded yet
+        return None
 
 # Robot class
 class Robot:
 
     # public properties----------------------
 
-    x = 0
-    y = 0
-    angle = 0
-    robotRadius = 7
-    allCones = []
+    x = 0 # x coordinate
+    y = 0 # y coordinate
+    angle = 0 # current angle of the robot
+    robotRadius = 7 # distacne between center of displacement and ultrasonic sensors
+    allCones = [] #holds all the cones
+
+    #array storing all the colour codes for the led
     colours = {"off":0,"red":1,"red_orange":2,"orange":3,"yellow_orange":4,"yellow":5,"yellow_green":6,"green":7,"blue_green":8,"blue":9,"blue_violet":10,"violet":11,"red_violet":12,"white":13}
 
     # ---------------------------------------
 
     # object instantiation ------------------
 
-    def __init__(self,dt,armL,armR,claw,colorLeft,colorRight,distanceLeft,distanceRight,led):
+    def __init__(self,dt,armL,armR,claw,colorLeft,colorRight,distanceLeft,distanceRight,led): #intiiation function
         self.drivetrain = dt
         self.colorRight = colorRight
         self.colorLeft = colorLeft
@@ -52,10 +56,10 @@ class Robot:
         self.armRight = armR
         self.claw = claw
 
-        self.armLeft.hold()
+        self.armLeft.hold() #holds both of the arm motors so the arm doesnt fall down and get in the way
         self.armRight.hold()
 
-        self.colorLeft.set_proximity_threshold(0)
+        self.colorLeft.set_proximity_threshold(0) # sets the accuracy and distance on the colour sensors
         self.colorRight.set_proximity_threshold(0)
 
 
@@ -66,28 +70,28 @@ class Robot:
     def intify(self,number): #used to convert from float to int
         self.num = round(number)
         self.iterate = 0
-        if number > 0:
+        if number > 0: #for positive numbers
             while self.iterate != self.num:
                 self.iterate+=1
-        else:
+        else: #for negative numbers
             while self.iterate != self.num:
                 self.iterate-=1
-        return self.iterate
+        return self.iterate #returns intified number
 
     # ---------------------------------------
 
     # NON-DEV robot specific functions ------
 
     def isActivated(self): #will return true if the led is pressed
-        if self.led.is_touch():
+        if self.led.is_touch(): #checks the hardware
             return True
         else:
             return False
 
     def light(self,colour,blink = False): #control the led
-        self.code = self.colours[colour]
-        self.led.named_color(self.code)
-        if blink == True:
+        self.code = self.colours[colour] #finds the colour code in the colour dictionary
+        self.led.named_color(self.code) #set sht ecolour of the led
+        if blink == True: #if blink was specified, blink the led
             self.led.blink()
         return None
 
@@ -95,47 +99,47 @@ class Robot:
         return None
 
     def moveToXYA(self,x,y,angle = None,ignoreCone = False): #move the robot to an x coord, y coord and angle of rotation
-        self.currentX = self.x
-        self.currentY = self.y
+        self.currentX = self.x #grabs current x coordinate
+        self.currentY = self.y #grabs current y coordinate
 
-        self.deltaX = float(math.fabs(x - self.currentX))
-        self.deltaY = float(math.fabs(y - self.currentY))
+        self.deltaX = float(math.fabs(x - self.currentX)) #calulates distance between two x coordinates
+        self.deltaY = float(math.fabs(y - self.currentY)) #calulates distance between two y coordinates
 
-        if self.deltaX == 0 and self.deltaY != 0:
-            if self.currentY > y:
-                self.rotateTo(180)
-            else:
-                self.rotateTo(0)
-        elif self.deltaX != 0 and self.deltaY == 0:
-            if self.currentX > x:
-                self.rotateTo(-90)
-            else:
-                self.rotateTo(90)
-        else:
-            if x > self.currentX and y > self.currentY:
-                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY))
-                self.rotateTo(self.rotation)
-            elif x > self.currentX and y < self.currentY:
-                self.rotation = 180 - math.degrees(math.atan(self.deltaX / self.deltaY))
-                self.rotateTo(self.rotation)
-            elif x < self.currentX and y > self.currentY:
-                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) * -1
-                self.rotateTo(self.rotation)
-            elif x < self.currentX and y < self.currentY:
-                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) - 180
-                self.rotateTo(self.rotation)
+        if self.deltaX == 0 and self.deltaY != 0: #if the robot is only moving in the y axis
+            if self.currentY > y: #if the movement is negative
+                self.rotateTo(180) #rotate the robot to 180 degrees
+            else: #if the movement is positive
+                self.rotateTo(0) #rotate the robot to 0 degrees
+        elif self.deltaX != 0 and self.deltaY == 0: #if the robot is only moving in the x axis
+            if self.currentX > x: # if the movement is negative
+                self.rotateTo(-90) #rotate the robot to -90 degrees
+            else: #if the movmeent is postiive
+                self.rotateTo(90) # rotate the robot to 90 degrees
+        else: #if there is movmeent in the x and y axis'
+            if x > self.currentX and y > self.currentY: #if the robot is moving into the first quadrant
+                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) #calculate the amount of rotation relative to 0
+                self.rotateTo(self.rotation) #rotate to this newly calculated angle
+            elif x > self.currentX and y < self.currentY: #if the robot is moving into the second quadrant
+                self.rotation = 180 - math.degrees(math.atan(self.deltaX / self.deltaY)) #calculate the amount of rotation relative to 0
+                self.rotateTo(self.rotation) #rotate to this newly calculated angle
+            elif x < self.currentX and y > self.currentY: #if the robot is moving into the fourth quadrant
+                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) * -1 #calculate the amount of rotation relative to 0
+                self.rotateTo(self.rotation) #rotate to this newly calculated angle
+            elif x < self.currentX and y < self.currentY: #if the robot is moving into the third quadrant
+                self.rotation = math.degrees(math.atan(self.deltaX / self.deltaY)) - 180 #calculate the amount of rotation relative to 0
+                self.rotateTo(self.rotation) #rotate to this newly calculated angle
 
-        self.distance = self.calculateDeltaD(x,y,self.currentX,self.currentY)
-        self.motion = self.moveBy(self.distance,ignoreCone)
+        self.distance = self.calculateDeltaD(x,y,self.currentX,self.currentY) # calculate the absolute value between the two coordinates
+        self.motion = self.moveBy(self.distance,ignoreCone) #move by the newly found distance, and specifiying the ignoreCone parmater with a variable
 
-        if self.motion == False:
-            return False
-        else:
-            self.x = x
-            self.y = y
-            if angle != None:
-                self.rotateTo(angle)
-            return True
+        if self.motion == False: #if the robot was unable to complete its journey
+            return False #return that journey was unsuccessful
+        else: #otherwsie,
+            self.x = x #set new x coordinate
+            self.y = y #set new y coordinate
+            if angle != None: # if a end rotation angle was specified
+                self.rotateTo(angle) #rotate to the specified angle
+            return True #return that journey was successful
 
     def collectCone(self): #collect a cone
         self.openClaw()
@@ -155,7 +159,7 @@ class Robot:
         sys.sleep(0.25)
         self.liftArm()
         sys.sleep(0.25)
-        self.openClaw()
+        self.openClaw() # second opening of claw as often claw sticks
         return None
 
     def moveBy(self,distance,ignoreCone = False): #move the robot forwards by a certain distance
@@ -259,33 +263,33 @@ class Robot:
 
             self.drivetrain.turn_until(22,-1*self.deltaR) #turn the robot
 
-            self.angle = self.goalAngle
+            self.angle = self.goalAngle #set new angle
 
             return True
 
-    def liftArm(self):
+    def liftArm(self): #lift the arm
         self.armLeft.run_to_position(100,-20,True)
         self.armRight.run_to_position(100,-20,True)
-        while self.armLeft.position() > -15 and self.armRight.position() > -15:
+        while self.armLeft.position() > -15 and self.armRight.position() > -15: #stops the function returning whilst still moving
             continue
         return None
 
-    def lowerArm(self):
+    def lowerArm(self): #lower the arm
         self.armLeft.run_to_position(30,262,True)
         self.armRight.run_to_position(30,262,True)
-        while self.armLeft.position() < 260 and self.armRight.position() < 260:
+        while self.armLeft.position() < 260 and self.armRight.position() < 260: #stops the function returning whilst still moving
             continue
         return None
 
-    def closeClaw(self):
+    def closeClaw(self): #close the claw
         self.claw.run_until_position(70,65,True)
         return True
 
-    def openClaw(self):
+    def openClaw(self): #open the claw
         self.claw.run_until_position(70,0,True)
         return True
 
-    def resolveReadings(self):
+    def resolveReadings(self): #resolve the location of the cone
         return None
 
     def resolveXY(self,xCoord,yCoord,distance,rotation): #function to update distaplacement of the robot by calculating new coordinates
@@ -326,16 +330,34 @@ class Robot:
                 self.coordinates.x = xCoord - (math.cos(math.fabs(self.radians + self.ninety)) * self.distance)
                 self.coordinates.y = yCoord - (math.sin(math.fabs(self.radians + self.ninety)) * self.distance)
 
-        self.coordinates.x = round(self.coordinates.x) #return values
+        self.coordinates.x = round(self.coordinates.x) #create new coordinates
         self.coordinates.y = round(self.coordinates.y)
 
-        return self.coordinates
+        return self.coordinates #return values
 
     def calculateDeltaD(self,goalX,goalY,currentX,currentY): #function to return distance between two coordinates
-        self.deltaX = math.fabs(currentX - goalX)
-        self.deltaY = math.fabs(currentY - goalY)
-        self.deltaD = math.fabs(math.sqrt((self.deltaX ** 2) + (self.deltaY ** 2)))
-        return self.deltaD
+        self.deltaX = math.fabs(currentX - goalX) #caclulates change in x axis
+        self.deltaY = math.fabs(currentY - goalY) #caclulates change in y axis
+        self.deltaD = math.fabs(math.sqrt((self.deltaX ** 2) + (self.deltaY ** 2))) # performs pythagoras on two values
+        return self.deltaD #returns absolute value
+
+    def recordNewCone(self,distance): #records the location of a new cone
+        self.coneLocation = self.resolveXY(self.x,self.y,distance,self.angle) #gets the coordinates of the new cone
+        self.duplicateCone = False
+
+        for cone in self.allCones: #for all the cones currently in the field
+            self.distanceBetweenCones = self.calculateDeltaD(cone.x,cone.y,self.coneLocation.x,self.coneLocation.y) # finds the distance between new cone and cone in question
+            if self.distanceBetweenCones < 20: #20 being cone radius * 2 | detects a duplicate cone
+                cone.x = (cone.x + self.coneLocation.x) / 2 #updates cone location if it was a duplicate
+                cone.y = (cone.y + self.coneLocation.y) / 2
+                self.duplicateCone = True
+                break
+
+        if self.duplicateCone == False: #if the cone was not a duplicate
+            self.allCones.append(Cone(self.coneLocation.x,self.coneLocation.y)) #add a new cone object
+            return True
+        else:
+            return False
 
     # ---------------------------------------
 
@@ -343,7 +365,7 @@ class Robot:
 
     def checkDistance(self,getLower = False): # a simple test function to check to see if there is anything in front of the robot
         if self.distanceLeft.distance() < 45 or self.distanceRight.distance() < 45:
-            if getLower == True:
+            if getLower == True: #get lower will return the lowest ultra value form the two if either of them are below 45
                 if self.distanceLeft.distance() < self.distanceRight.distance():
                     return round(self.distanceLeft.distance())
                 else:
@@ -364,76 +386,58 @@ class Robot:
 
         return round(self.distance) #return value
 
-    def alignToCone(self):
-        if self.lookingAtCone() == False and self.distanceLeft.distance() >= 45 and self.distanceRight.distance() >= 45:
-            return False
+    def alignToCone(self): #aligns the robot to a nearby cone
+        if self.lookingAtCone() == False and self.distanceLeft.distance() >= 45 and self.distanceRight.distance() >= 45: # if not looking at cone and both distances sensors show nothing
+            return False #return failed align
         else:
-            if self.checkDistance(True) > 20:
-                self.deltaD = round(self.calculateUltraDistance() - 20)
+            if self.checkDistance(True) > 20: #if there is a cone in sight but furthur than 20 cm
+                self.deltaD = round(self.calculateUltraDistance() - 20) #move the robot to be 20cm away
                 self.moveBy(self.deltaD,True)
 
-            self.maxSwingAmount = 5
+            self.maxSwingAmount = 5 #set the number of times the robot will swing from side to side
 
-            if self.distanceLeft.distance() > self.distanceRight.distance():
+            if self.distanceLeft.distance() > self.distanceRight.distance(): #set the intial swing direction
                 self.directionOfSwing = 1
             else:
                 self.directionOfSwing = -1
 
-            for swing in range(4, self.maxSwingAmount + 4):
+            for swing in range(4, self.maxSwingAmount + 4): #for number of swings
                 for turn in range(0,swing):
-                    if self.lookingAtCone():
+                    if self.lookingAtCone(): #check if looking at cone
                         break
-                    self.rotateBy(self.directionOfSwing * 8)
+                    self.rotateBy(self.directionOfSwing * 8) #rotate the robot
                     sys.sleep(0.6)
                 if self.lookingAtCone():
                     break
-                self.directionOfSwing = self.directionOfSwing * -1
+                self.directionOfSwing = self.directionOfSwing * -1 #change direction of swing
 
-            self.deltaD = round(self.calculateUltraDistance() - 20)
+            self.deltaD = round(self.calculateUltraDistance() - 20) #move the robot to be 20cm from the cone
             self.moveBy(self.deltaD,True)
             sys.sleep(1)
             self.deltaD = round(self.calculateUltraDistance() - 20)
             self.moveBy(self.deltaD,True)
             return True
 
-    def lookingAtCone(self):
+    def lookingAtCone(self): #returns whether the robot is looking at a cone
         if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
             return True
         else:
             return False
 
-    def debug(self,updateScreen = True,debugDelay = 0,color = None):
+    def debug(self,updateScreen = True,debugDelay = 0,color = None): #used solely for debugging, allows time delay, screen update and led change
         if updateScreen == True:
-            vexiq.lcd_write("X: " + str(robot.x) + ", Y: "+ str(robot.y) + ", A: " + str(robot.angle),1)
+            vexiq.lcd_write("X: " + str(robot.x) + ", Y: "+ str(robot.y) + ", A: " + str(robot.angle),1) #updates screen
             vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
             vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
             vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),4)
             vexiq.lcd_write("Cones: " + str(len(robot.allCones)),5)
 
         if color != None:
-            self.code = self.colours[color]
+            self.code = self.colours[color] #sets led colour
             self.led.named_color(self.code)
 
-        sys.sleep(debugDelay)
+        sys.sleep(debugDelay) #delays the program
         return None
-
-    def recordNewCone(self,distance):
-        self.coneLocation = self.resolveXY(self.x,self.y,distance,self.angle)
-        self.duplicateCone = False
-
-        for cone in self.allCones:
-            self.distanceBetweenCones = self.calculateDeltaD(cone.x,cone.y,self.coneLocation.x,self.coneLocation.y)
-            if self.distanceBetweenCones < 20: #20 being cone radius * 2
-                cone.x = (cone.x + self.coneLocation.x) / 2
-                cone.y = (cone.y + self.coneLocation.y) / 2
-                self.duplicateCone = True
-                break
-
-        if self.duplicateCone == False:
-            self.allCones.append(Cone(self.coneLocation.x,self.coneLocation.y))
-            return True
-        else:
-            return False
 
 # -------------------------------------------
 
