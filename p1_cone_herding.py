@@ -408,6 +408,7 @@ class Robot:
             vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
             vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
             vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),4)
+            vexiq.lcd_write("Cones: " + str(len(robot.allCones)),5)
 
         if color != None:
             self.code = self.colours[color]
@@ -418,8 +419,21 @@ class Robot:
 
     def recordNewCone(self,distance):
         self.coneLocation = self.resolveXY(self.x,self.y,distance,self.angle)
-        self.allCones.append(Cone(self.coneLocation.x,self.coneLocation.y))
-        return True
+        self.duplicateCone = False
+
+        for cone in self.allCones:
+            self.distanceBetweenCones = self.calculateDeltaD(cone.x,cone.y,self.coneLocation.x,self.coneLocation.y)
+            if self.distanceBetweenCones < 20: #20 being cone radius * 2
+                cone.x = (cone.x + self.coneLocation.x) / 2
+                cone.y = (cone.y + self.coneLocation.y) / 2
+                self.duplicateCone = True
+                break
+
+        if self.duplicateCone == False:
+            self.allCones.append(Cone(self.coneLocation.x,self.coneLocation.y))
+            return True
+        else:
+            return False
 
 # -------------------------------------------
 
