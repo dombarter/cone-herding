@@ -368,8 +368,8 @@ class Robot:
         if self.lookingAtCone() == False and self.distanceLeft.distance() >= 45 and self.distanceRight.distance() >= 45:
             return False
         else:
-            if self.checkDistance(True) > 25:
-                self.deltaD = round(self.calculateUltraDistance() - 25)
+            if self.checkDistance(True) > 20:
+                self.deltaD = round(self.calculateUltraDistance() - 20)
                 self.moveBy(self.deltaD,True)
 
             self.maxSwingAmount = 5
@@ -383,7 +383,7 @@ class Robot:
                 for turn in range(0,swing):
                     if self.lookingAtCone():
                         break
-                    self.rotateBy(self.directionOfSwing * 6)
+                    self.rotateBy(self.directionOfSwing * 8)
                     sys.sleep(0.6)
                 if self.lookingAtCone():
                     break
@@ -491,13 +491,19 @@ while True:
         # Motion call ---------------
 
         if len(robot.allCones) == 0:
-            result = robot.moveToXYA(0,150)
-            if result == False:
-                robot.light("green",True)
-                robot.alignToCone()
-                robot.recordNewCone(robot.calculateUltraDistance())
-                robot.light("orange",True)
-                robot.moveToXYA(0,0,0,True)
+            robot.moveBy(150)
+            robot.light("green",True)
+            robot.alignToCone()
+            robot.recordNewCone(robot.calculateUltraDistance())
+            robot.light("orange",True)
+            robot.moveBy(-10)
+            robot.rotateTo(-90)
+            robot.moveBy(150)
+            robot.light("green",True)
+            robot.alignToCone()
+            robot.recordNewCone(robot.calculateUltraDistance())
+            robot.light("orange",True)
+            robot.moveToXYA(0,0,0,True)
         else:
             cone = robot.allCones[0]
             result = robot.moveToXYA(cone.x,cone.y)
