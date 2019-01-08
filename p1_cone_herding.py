@@ -154,6 +154,7 @@ class Robot():
         sys.sleep(0.25)
         self.liftArm()
         sys.sleep(0.25)
+        self.openClaw()
         return None
 
     def moveBy(self,distance,ignoreCone = False): #move the robot forwards by a certain distance
@@ -163,7 +164,7 @@ class Robot():
         self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
 
         if ignoreCone == False: #check for a cone
-            if self.checkCone() == True: #if cone is in the way
+            if self.checkDistance() == True: #if cone is in the way
                 return False #robot has been unable to reach the final destination
 
         self.numberOfIterations = self.intify(math.floor(self.cm / 30))
@@ -182,7 +183,7 @@ class Robot():
                 for i in range(0,self.numberOfIterations):
 
                     if ignoreCone == False:
-                        if self.checkCone() == True: #if cone is in the way
+                        if self.checkDistance() == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
                     self.drivetrain.drive_until(30,300) #move robot by 15cm
@@ -200,7 +201,7 @@ class Robot():
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
                     if ignoreCone == False:
-                        if self.checkCone() == True: #if cone is in the way
+                        if self.checkDistance() == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
                 self.drivetrain.drive_until(30,self.remainder*10)
@@ -339,55 +340,16 @@ class Robot():
 
     # DEV robot specific functions ----------
 
-    def checkCone(self): # a simple test function to check to see if there is anything in front of the robot
-
-        if self.distanceLeft.distance() < 35 or self.distanceRight.distance() < 35:
+    def checkDistance(self,getLower = False): # a simple test function to check to see if there is anything in front of the robot
+        if self.distanceLeft.distance() < 50 or self.distanceRight.distance() < 50:
+            if getLower == True:
+                if self.distanceLeft.distance() < self.distanceRight.distance():
+                    return round(self.distanceLeft.distance())
+                else:
+                    return round(self.distanceRight.distance())
             return True
         else:
             return False
-
-    def alignToObjectOld(self,repeat = False):
-
-        ur = round(self.distanceRight.distance())
-        ul = round(self.distanceLeft.distance())
-
-        if ur > 50 and ul > 50:
-            return None
-        else:
-            if repeat == True:
-                while repeat:
-                    ur = round(self.distanceRight.distance())
-                    ul = round(self.distanceLeft.distance())
-                    vexiq.lcd_write("LU: " + str(round(UltraLeft.distance())),4)
-                    vexiq.lcd_write("RU: " + str(round(UltraRight.distance())),5)
-                    if ur > ul:
-                        self.drivetrain.turn(10)
-                    elif ur < ul:
-                        self.drivetrain.turn(-10)
-                    else:
-                        self.drivetrain.hold()
-
-            elif repeat == False:
-                while ur != ul:
-                    if ur > ul:
-                        self.drivetrain.turn(10)
-                    elif ur < ul:
-                        self.drivetrain.turn(-10)
-                    else:
-                        break
-                    ur = round(self.distanceRight.distance())
-                    ul = round(self.distanceLeft.distance())
-                self.drivetrain.hold()
-
-                sys.sleep(0.7)
-
-                ur = round(self.distanceRight.distance())
-                ul = round(self.distanceLeft.distance())
-
-                if ur != ul:
-                    self.alignToObject()
-
-                return None
 
     def calculateUltraDistance(self): #gets the distance from the displacement to the cone
         self.leftUltra = self.distanceLeft.distance() #grab both distance values
@@ -405,22 +367,33 @@ class Robot():
         if self.lookingAtCone() == False and self.distanceLeft.distance() > 40 and self.distanceRight.distance() > 40:
             return False
         else:
-            if self.lookingAtCone() == True:
-                self.deltaD = round(self.calculateUltraDistance() - 22) # 24 being ideal claw drop distance
+            if self.checkDistance(True) > 30:
+                self.deltaD = round(self.calculateUltraDistance() - 30)
                 self.moveBy(self.deltaD,True)
-                return True
+
+            self.maxSwingAmount = 5
+
+            if self.distanceLeft.distance() > self.distanceRight.distance():
+                self.directionOfSwing = 1
             else:
-                while self.lookingAtCone() == False:
-                    if self.distanceLeft.distance() > self.distanceRight.distance():
-                        self.rotateBy(10)
-                        vexiq.lcd_write(self.angle)
-                    else:
-                        self.rotateBy(-10)
-                        vexiq.lcd_write(self.angle)
+                self.directionOfSwing = -1
+
+            for swing in range(3, self.maxSwingAmount + 3):
+                for turn in range(0,swing):
+                    if self.lookingAtCone():
+                        break
+                    self.rotateBy(self.directionOfSwing * 10)
                     sys.sleep(0.75)
-                self.deltaD = round(self.calculateUltraDistance() - 22) # 24 being ideal claw drop distance
-                self.moveBy(self.deltaD,True)
-                return True
+                if self.lookingAtCone():
+                    break
+                self.directionOfSwing = self.directionOfSwing * -1
+
+            self.deltaD = round(self.calculateUltraDistance() - 20)
+            self.moveBy(self.deltaD,True)
+            sys.sleep(1.5)
+            self.deltaD = round(self.calculateUltraDistance() - 20)
+            self.moveBy(self.deltaD,True)
+            return True
 
     def lookingAtCone(self):
         if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
@@ -430,11 +403,10 @@ class Robot():
 
     def debug(self,updateScreen = True,debugDelay = 0,color = None):
         if updateScreen == True:
-            vexiq.lcd_write("Angle: " + str(robot.angle),1)
-            vexiq.lcd_write("X Coord: " + str(robot.x),2)
-            vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-            vexiq.lcd_write("Distance: " + str(robot.calculateUltraDistance()) + " cm",4)
-            vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),5)
+            vexiq.lcd_write("X: " + str(robot.x) + ", Y: "+ str(robot.y) + ", A: " + str(robot.angle),1)
+            vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
+            vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
+            vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),4)
 
         if color != None:
             self.code = self.colours[color]
@@ -483,11 +455,11 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 while True:
     robot.light("blue")
 
-    vexiq.lcd_write("Angle: " + str(robot.angle),1)
-    vexiq.lcd_write("X Coord: " + str(robot.x),2)
-    vexiq.lcd_write("Y Coord: " + str(robot.y),3)
-    vexiq.lcd_write("Distance: " + str(robot.calculateUltraDistance()) + " cm",4)
-    vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),5)
+
+    vexiq.lcd_write("X: " + str(robot.x) + ", Y: "+ str(robot.y) + ", A: " + str(robot.angle),1)
+    vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
+    vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
+    vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),4)
 
     if robot.isActivated():
 
@@ -496,11 +468,15 @@ while True:
 
         # Motion call ---------------
 
-        robot.moveToXYA(0,150)
-        robot.alignToCone()
-        robot.collectCone()
-        robot.moveToXYA(0,0,0)
-        robot.deliverCone()
+        result = robot.moveToXYA(0,150)
+        if result == False:
+            robot.light("green",True)
+            robot.alignToCone()
+            robot.collectCone()
+            robot.light("orange",True)
+        robot.moveToXYA(0,0,0,True)
+        if result == False:
+            robot.deliverCone()
         #
 
         # ---------------------------
