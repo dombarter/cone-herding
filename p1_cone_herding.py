@@ -471,7 +471,7 @@ class Robot:
 
     def debug(self,updateScreen = True,debugDelay = 0,color = None): #used solely for debugging, allows time delay, screen update and led change
         if updateScreen == True:
-            vexiq.lcd_write("X: " + str(robot.x) + ", Y: "+ str(robot.y) + ", A: " + str(robot.angle),1) #updates screen
+            vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1) #updates screen
             vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
             vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
             vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),4)
@@ -524,15 +524,14 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 while True:
     robot.light("blue")
 
-
-    vexiq.lcd_write("X: " + str(robot.x) + ", Y: "+ str(robot.y) + ", A: " + str(robot.angle),1)
-    vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
-    vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
-    vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),4)
+    #vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1)
+    #vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
+    #vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
+    #vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),4)
     #vexiq.lcd_write("Cones: " + str(len(robot.allCones)),5)
-    vexiq.lcd_write("Ultra: " + str(robot.calculateUltraDistance()),5)
-    #vexiq.lcd_write("Ultra: " + str(robot.meanOfValues([10,15,20])),5)
 
+    vexiq.lcd_write("Claw: " + str(robot.claw.position()),1)
+    vexiq.lcd_write("Arm: " + str(robot.armLeft.position()),2)
 
     if robot.isActivated():
 
