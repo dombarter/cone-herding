@@ -298,9 +298,9 @@ class Robot:
         return None
 
     def lowerArm(self): #lower the arm
-        self.armLeft.run_to_position(30,262,True)
-        self.armRight.run_to_position(30,262,True)
-        while self.armLeft.position() < 220 and self.armRight.position() < 220: #stops the function returning whilst still moving
+        self.armLeft.run_to_position(30,275,True)
+        self.armRight.run_to_position(30,275,True)
+        while self.armLeft.position() < 250 and self.armRight.position() < 250: #stops the function returning whilst still moving
             continue
         self.armLeft.hold()
         self.armRight.hold()
