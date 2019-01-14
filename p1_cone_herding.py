@@ -541,7 +541,7 @@ while True:
 
         # Motion call ---------------
 
-        """
+
         if len(robot.allCones) == 0:
             robot.moveBy(150)
             robot.light("green",True)
@@ -568,9 +568,9 @@ while True:
                     robot.deliverCone()
                     del robot.allCones[0]
                 else:
-                    robot.moveToXYA(0,0,0,True)"""
+                    robot.moveToXYA(0,0,0,True)
 
-        robot.alignToCone()
+        #robot.alignToCone()
 
         # ---------------------------
 
