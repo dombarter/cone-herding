@@ -390,14 +390,49 @@ class Robot:
 
     # DEV robot specific functions ----------
 
-    def checkDistance(self,getLower = False): # a simple test function to check to see if there is anything in front of the robot
+    def checkDistance(self,preciseReadings = False): # a simple test function to check to see if there is anything in front of the robot
         if self.distanceLeft.distance() < 40 or self.distanceRight.distance() < 40:
-            if getLower == True: #get lower will return the lowest ultra value form the two if either of them are below 45
-                if self.distanceLeft.distance() < self.distanceRight.distance():
-                    return round(self.distanceLeft.distance())
+
+            if preciseReadings == True: #get lower will return the lowest ultra value from the two but precisely calculated
+
+                self.leftNumbers = []
+                self.rightNumbers = []
+                self.leftReading = 0
+                self.rightReading = 0
+                sys.sleep(0.1)
+
+                for x in range(0,5): #grabs values
+                    self.leftNumbers.append(self.distanceLeft.distance())
+                    self.rightNumbers.append(self.distanceRight.distance())
+                    sys.sleep(0.1)
+
+                self.sdl = round(self.standardDeviation(self.leftNumbers) * 2.5) #creates multiplied sd
+                self.sdr = round(self.standardDeviation(self.rightNumbers) * 2.5)
+
+                self.lmean = self.meanOfValues(self.leftNumbers) #creates mean
+                self.rmean = self.meanOfValues(self.rightNumbers)
+
+                self.newLeftNumbers = []
+                self.newRightNumbers = []
+
+                for number in self.leftNumbers: #remove values outside the limits
+                    if number >= (self.lmean - self.sdl) or number <= (self.lmean + self.sdl):
+                        self.newLeftNumbers.append(number)
+
+                for number in self.rightNumbers: #remove values outside the limits
+                    if number >= (self.rmean - self.sdr) or number <= (self.rmean + self.sdr):
+                        self.newRightNumbers.append(number)
+
+                self.leftReading = self.meanOfValues(self.newLeftNumbers) #creates new averages
+                self.rightReading = self.meanOfValues(self.newRightNumbers)
+
+                if self.leftReading < self.rightReading: #returns lowest value
+                    return round(self.leftReading)
                 else:
-                    return round(self.distanceRight.distance())
-            return True
+                    return round(self.rightReading)
+
+            else:
+                return True
         else:
             return False
 
@@ -438,7 +473,6 @@ class Robot:
             if self.intialDistance > 20: #if the intial is large
                 self.deltaD = round(self.intialDistance - 20) #calulate change in displacement
                 self.moveBy(self.deltaD,True) #move the robot
-
 
             self.maxSwingAmount = 5 #set the number of times the robot will swing from side to side
             if self.distanceLeft.distance() > self.distanceRight.distance(): #set the intial swing direction
