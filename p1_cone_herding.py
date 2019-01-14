@@ -474,7 +474,6 @@ class Robot:
                 self.deltaD = round(self.intialDistance - 20) #calulate change in displacement
                 self.moveBy(self.deltaD,True) #move the robot
 
-
             self.maxSwingAmount = 5 #set the number of times the robot will swing from side to side
             if self.distanceLeft.distance() > self.distanceRight.distance(): #set the intial swing direction
                 self.directionOfSwing = 1
