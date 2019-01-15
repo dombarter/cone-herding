@@ -402,7 +402,7 @@ class Robot:
         else:
             return False
 
-    def averageReadings(self,delay = 0.2,repeat = 10,sd_multiplier = 2.5): #gets the readings of the ultrasonic, with many overloads
+    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 2.5): #gets the readings of the ultrasonic, with many overloads
 
         self.leftNumbers = [] #variables
         self.rightNumbers = []
@@ -439,13 +439,74 @@ class Robot:
         return self.newReadings #returns the readings
 
     def alignToCone(self): #will align the robot to a cone infront of it
-        return None
 
-    def resolveReadings(self,option,distance = 1): #resolve the location of the cone
+        if self.lookingAtCone() == False and self.resolveReadings(1) == False: # if not looking at cone and both distances sensors show nothing
+            return False #return failed align
+        else:
+
+            # intial align - cone not in front of robot
+
+            self.light("white",True) #intial align
+            self.intialDistance = self.resolveReadings(2) # grab the sighting distance
+
+            if self.intialDistance >= 20: #if the intial is large
+                self.deltaD = round(self.intialDistance - (20 - self.robotRadius)) #calulate change in displacement
+                self.moveBy(self.deltaD,True) #move the robot
+
+            # line the robot up to be pointing at the cone
+
+            self.light("yellow",True) #swing align
+
+            self.maxSwingAmount = 5 #set the number of times the robot will swing from side to side
+            self.intialSwingAmount = 4
+            self.flag = False #shows if the robot has been successful in the sweeps
+
+            self.readingsResult = self.averageReadings(0,5)
+            if self.readingsResult.left > self.readingsResult.left: #set the intial swing direction
+                self.directionOfSwing = 1 #turning right
+            else:
+                self.directionOfSwing = -1 #turning left
+
+            for x in range(0,self.intialSwingAmount): #intial swing
+                if self.lookingAtCone():
+                    self.flag = True
+                    break
+                self.rotateBy(self.directionOfSwing * 8) #rotate the robot
+                sys.sleep(0.2)
+
+            self.direction = self.direction * -1
+
+            if self.flag == False: #if the cone was not found
+                for y in range(((self.intialSwingAmount*2) + 1), (self.maxSwingAmount + ((self.intialSwingAmount*2) + 1))): #for number of swings
+                    for z in range(0,y):
+                        if self.lookingAtCone(): #check if looking at cone
+                            self.flag = True
+                            break
+                        self.rotateBy(self.directionOfSwing * 8) #rotate the robot
+                        sys.sleep(0.6)
+                    if self.lookingAtCone():
+                        self.flag = True
+                        break
+                    self.directionOfSwing = self.directionOfSwing * -1 #change direction of swing
+
+            # robot now aligned, final move to the robot
+
+            if self.flag == False:
+                return False
+            else:
+                self.light("violet",True) #ultra align
+
+                self.deltaD = round(self.resolveReadings(3) - 20)
+                self.moveBy(self.deltaD,True)
+
+                robot.light("orange",True) #return to program
+                return True
+
+    def resolveReadings(self,option,distance = 1): #resolve the location of the cone using the ultrasonic sensors
 
         if option == 1: #BASIC DISTANCE CHECK, QUICK TO SEE IF ANYTHING IN THE WAY
 
-            self.readingsResult = self.averageReadings(0) #grabs readings with 0 delay in the checks
+            self.readingsResult = self.averageReadings(0,5) #grabs readings with 0 delay in the checks and half the number of readings
             if self.readingsResult.left < 40 or self.readingsResult.right < 40: #checks to see if the readings are below a certain distance
                 return True #returns true
             else:
@@ -482,6 +543,12 @@ class Robot:
         else: #IF NO VALID OPTION PICKED
 
             return None
+
+    def lookingAtCone(self): #returns whether the robot is looking at a cone using colour sensors
+        if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
+            return True
+        else:
+            return False
 
     # ---------------------------------------
 
@@ -566,72 +633,7 @@ class Robot:
         return round(self.averageReadings) #return value
 
     def alignToCone(self): #aligns the robot to a nearby cone
-        if self.lookingAtCone() == False and self.checkDistance() == False: # if not looking at cone and both distances sensors show nothing
-            self.light("red")
-            sys.sleep(0.75)
-            self.light("orange",True)
-            return False #return failed align
-        else:
-            self.light("white",True) #intial align
 
-            self.intialDistance = self.checkDistance(True) # grab the sighting distance
-            if self.intialDistance >= 20: #if the intial is large
-                self.deltaD = round(self.intialDistance - (20 - self.robotRadius)) #calulate change in displacement
-                self.moveBy(self.deltaD,True) #move the robot
-
-            self.light("yellow",True) #swing align
-
-            self.maxSwingAmount = 5 #set the number of times the robot will swing from side to side
-            self.flag = False
-            if self.distanceLeft.distance() > self.distanceRight.distance(): #set the intial swing direction
-                self.directionOfSwing = 1
-            else:
-                self.directionOfSwing = -1
-
-            for swing in range(4, self.maxSwingAmount + 4): #for number of swings
-                for turn in range(0,swing):
-                    if self.lookingAtCone(True,2.5) and self.lookingAtCone(): #check if looking at cone
-                        self.flag = True
-                        break
-                    self.rotateBy(self.directionOfSwing * 8) #rotate the robot
-                    sys.sleep(0.6)
-                if self.lookingAtCone(True,2.5) and self.lookingAtCone():
-                    self.flag = True
-                    break
-                self.directionOfSwing = self.directionOfSwing * -1 #change direction of swing
-
-            if self.flag == False:
-                return False
-            else:
-                self.light("violet",True) #ultra align
-
-                self.deltaD = round(self.calculateUltraDistance() - 20)
-                self.moveBy(self.deltaD,True)
-
-                robot.light("orange",True) #return to program
-                return True
-
-    def lookingAtCone(self,distanceOnly = False,accuracy = 0.8): #returns whether the robot is looking at a cone
-        if distanceOnly == False:
-            if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
-                return True
-            else:
-                return False
-        else:
-            self.leftNumbers = []
-            self.rightNumbers = []
-
-            for x in range(0,3):
-                self.leftNumbers.append(self.distanceLeft.distance())
-                self.rightNumbers.append(self.distanceRight.distance())
-
-            self.lmean = self.meanOfValues(self.leftNumbers)
-            self.rmean = self.meanOfValues(self.rightNumbers)
-
-            if math.fabs(self.lmean - self.rmean) <= accuracy:
-                return True
-            else:
-                return False
 
     def debug(self,updateScreen = True,debugDelay = 0,color = None): #used solely for debugging, allows time delay, screen update and led change
         if updateScreen == True:
