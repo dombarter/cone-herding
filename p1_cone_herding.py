@@ -307,9 +307,9 @@ class Robot:
         return None
 
     def lowerArm(self): #lower the arm
-        self.armLeft.run_to_position(30,275,True)
-        self.armRight.run_to_position(30,275,True)
-        while self.armLeft.position() < 255 and self.armRight.position() < 255: #stops the function returning whilst still moving
+        self.armLeft.run_to_position(30,250,True)
+        self.armRight.run_to_position(30,250,True)
+        while self.armLeft.position() < 250 and self.armRight.position() < 250: #stops the function returning whilst still moving
             continue
         self.armLeft.hold()
         self.armRight.hold()
@@ -504,14 +504,14 @@ class Robot:
             else:
                 self.directionOfSwing = -1
 
-            for swing in range(3, self.maxSwingAmount + 3): #for number of swings
+            for swing in range(4, self.maxSwingAmount + 4): #for number of swings
                 for turn in range(0,swing):
-                    if self.lookingAtCone() or self.lookingAtCone(True): #check if looking at cone
+                    if self.lookingAtCone(True)  or self.lookingAtCone(): #check if looking at cone
                         self.flag = True
                         break
                     self.rotateBy(self.directionOfSwing * 8) #rotate the robot
                     sys.sleep(0.6)
-                if self.lookingAtCone() or self.lookingAtCone(True):
+                if self.lookingAtCone(True) or self.lookingAtCone():
                     self.flag = True
                     break
                 self.directionOfSwing = self.directionOfSwing * -1 #change direction of swing
@@ -527,7 +527,7 @@ class Robot:
                 robot.light("orange",True) #return to program
                 return True
 
-    def lookingAtCone(self,distanceOnly = False): #returns whether the robot is looking at a cone
+    def lookingAtCone(self,distanceOnly = False,range = 0.8): #returns whether the robot is looking at a cone
         if distanceOnly == False:
             if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
                 return True
@@ -544,7 +544,7 @@ class Robot:
             self.lmean = self.meanOfValues(self.leftNumbers)
             self.rmean = self.meanOfValues(self.rightNumbers)
 
-            if math.fabs(self.lmean - self.rmean) <= 1:
+            if math.fabs(self.lmean - self.rmean) <= range:
                 return True
             else:
                 return False
