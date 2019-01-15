@@ -168,10 +168,10 @@ class Robot:
         sys.sleep(0.25)
         self.lowerArm()
         sys.sleep(0.25)
-        self.rotateBy(-8)
-        self.rotateBy(16)
-        self.rotateBy(-8)
-        self.moveBy(10)
+        self.rotateBy(-5)
+        self.rotateBy(10)
+        self.rotateBy(-5)
+        self.moveBy(5,True)
         sys.sleep(0.25)
         self.closeClaw()
         sys.sleep(0.25)
@@ -316,12 +316,14 @@ class Robot:
         return None
 
     def closeClaw(self): #close the claw
-        self.claw.run_until_position(70,60,True)
+        self.claw.run_time(70,0.8,True)
+        #self.claw.run_until_position(70,60,True)
         self.claw.hold()
         return True
 
     def openClaw(self): #open the claw
-        self.claw.run_until_position(70,0,True)
+        self.claw.run_time(-70,0.8)
+        #self.claw.run_until_position(70,0,True)
         self.claw.off()
         return True
 
@@ -494,6 +496,7 @@ class Robot:
             self.light("yellow",True) #swing align
 
             self.maxSwingAmount = 5 #set the number of times the robot will swing from side to side
+            self.flag = False
             if self.distanceLeft.distance() > self.distanceRight.distance(): #set the intial swing direction
                 self.directionOfSwing = 1
             else:
@@ -502,20 +505,25 @@ class Robot:
             for swing in range(3, self.maxSwingAmount + 3): #for number of swings
                 for turn in range(0,swing):
                     if self.lookingAtCone(): #check if looking at cone
+                        self.flag = True
                         break
                     self.rotateBy(self.directionOfSwing * 8) #rotate the robot
                     sys.sleep(0.6)
                 if self.lookingAtCone():
+                    self.flag = True
                     break
                 self.directionOfSwing = self.directionOfSwing * -1 #change direction of swing
 
-            self.light("violet",True) #ultra align
+            if self.flag == False:
+                return False
+            else:
+                self.light("violet",True) #ultra align
 
-            self.deltaD = round(self.calculateUltraDistance() - 20)
-            self.moveBy(self.deltaD,True)
+                self.deltaD = round(self.calculateUltraDistance() - 20)
+                self.moveBy(self.deltaD,True)
 
-            robot.light("orange",True) #return to program
-            return True
+                robot.light("orange",True) #return to program
+                return True
 
     def lookingAtCone(self): #returns whether the robot is looking at a cone
         if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
