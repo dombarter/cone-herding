@@ -441,25 +441,47 @@ class Robot:
     def alignToCone(self): #will align the robot to a cone infront of it
         return None
 
-    def resolveReadings(self,option): #resolve the location of the cone
+    def resolveReadings(self,option,distance = 1): #resolve the location of the cone
+
         if option == 1: #BASIC DISTANCE CHECK, QUICK TO SEE IF ANYTHING IN THE WAY
 
-            continue
+            self.readingsResult = self.averageReadings(0) #grabs readings with 0 delay in the checks
+            if self.readingsResult.left < 40 or self.readingsResult.right < 40: #checks to see if the readings are below a certain distance
+                return True #returns true
+            else:
+                return False #returns false
 
         elif option == 2: #UNALIGNED DISTANCE CHECK, WILL RETURN SHORTEST DISTANCE
 
-            continue
+            self.readingsResult = self.averageReadings() #grabs readings
+            if self.readingsResult.left < self.readingsResult.right: #checks to see which reading is lower
+                return self.readingsResult.left
+            else:
+                return self.readingsResult.right
 
         elif option == 3: #ALIGNED DISTANCE CHECK, WILL RETURN EXACT DISTANCE TO OBJECT
 
-            continue
+            self.readingsResult = self.averageReadings() #grabs readings
+
+            self.average = round((self.readingsResult.left + self.readingsResult.right) / 2) #create an average of the values
+            self.distance = math.sqrt((self.average ** 2) - (5**2)) #perform some cheeky pythagoras
+            self.distance = round(self.distance + self.robotRadius) #add on robot radius (means the distance is relative to x,y coord)
+
+            return self.distance
+
+        elif option == 4:  #WILL TEST TO FIND THE DISTANCE BETWEEN THE TWO READINGS, SEE HOW EQUAL THEY ARE
+
+            self.readingsResult = self.averageReadings() #grabs readings
+
+            self.deltaU = math.fabs(round(self.readingsResult.left - self.readingsResult.right)) #finds absolute difference
+            if self.deltaU <= distance: #checks to see if difference is within range
+                return True
+            else:
+                return False
 
         else: #IF NO VALID OPTION PICKED
 
             return None
-
-
-        return None
 
     # ---------------------------------------
 
