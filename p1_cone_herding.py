@@ -163,17 +163,25 @@ class Robot:
             return True #return that journey was successful
 
     def collectCone(self): #collect a cone
+        self.light("green",True)
         self.openClaw()
         sys.sleep(0.25)
         self.lowerArm()
+        sys.sleep(0.25)
+        self.rotateBy(-8)
+        self.rotateBy(16)
+        self.rotateBy(-8)
+        self.moveBy(10)
         sys.sleep(0.25)
         self.closeClaw()
         sys.sleep(0.25)
         self.liftArm()
         sys.sleep(0.25)
+        self.light("orange",True)
         return None
 
     def deliverCone(self): #deliver a cone
+        self.light("green",True)
         self.lowerArm()
         sys.sleep(0.25)
         self.openClaw()
@@ -181,6 +189,7 @@ class Robot:
         self.liftArm()
         sys.sleep(0.25)
         self.openClaw() # second opening of claw as often claw sticks
+        self.light("orange",True)
         return None
 
     def moveBy(self,distance,ignoreCone = False): #move the robot forwards by a certain distance
@@ -307,7 +316,7 @@ class Robot:
         return None
 
     def closeClaw(self): #close the claw
-        self.claw.run_until_position(70,65,True)
+        self.claw.run_until_position(70,60,True)
         self.claw.hold()
         return True
 
@@ -469,7 +478,7 @@ class Robot:
         return round(self.averageReadings) #return value
 
     def alignToCone(self): #aligns the robot to a nearby cone
-        if self.lookingAtCone() == False or self.checkDistance() == False: # if not looking at cone and both distances sensors show nothing
+        if self.lookingAtCone() == False and self.checkDistance() == False: # if not looking at cone and both distances sensors show nothing
             self.light("red")
             sys.sleep(0.75)
             self.light("orange",True)
@@ -490,7 +499,7 @@ class Robot:
             else:
                 self.directionOfSwing = -1
 
-            for swing in range(4, self.maxSwingAmount + 4): #for number of swings
+            for swing in range(3, self.maxSwingAmount + 3): #for number of swings
                 for turn in range(0,swing):
                     if self.lookingAtCone(): #check if looking at cone
                         break
