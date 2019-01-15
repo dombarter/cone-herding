@@ -205,7 +205,7 @@ class Robot:
         self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
 
         if ignoreCone == False: #check for a cone
-            if self.checkDistance() == True: #if cone is in the way
+            if self.resolveReadings(1) == True: #if cone is in the way
                 return False #robot has been unable to reach the final destination
 
         self.numberOfIterations = self.intify(math.floor(self.cm / 30))
@@ -224,7 +224,7 @@ class Robot:
                 for i in range(0,self.numberOfIterations):
 
                     if ignoreCone == False:
-                        if self.checkDistance() == True: #if cone is in the way
+                        if self.resolveReadings(1) == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
                     self.drivetrain.drive_until(30,300) #move robot by 15cm
@@ -242,7 +242,7 @@ class Robot:
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
                     if ignoreCone == False:
-                        if self.checkDistance() == True: #if cone is in the way
+                        if self.resolveReadings(1) == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
                 self.drivetrain.drive_until(30,self.remainder*10)
@@ -554,94 +554,9 @@ class Robot:
 
     # DEV robot specific functions ----------
 
-    def checkDistance(self,preciseReadings = False): # a simple test function to check to see if there is anything in front of the robot
-        if preciseReadings == True: #get lower will return the lowest ultra value from the two but precisely calculated
-            self.leftNumbers = []
-            self.rightNumbers = []
-            self.leftReading = 0
-            self.rightReading = 0
-
-            for x in range(0,5): #grabs values
-                self.leftNumbers.append(self.distanceLeft.distance())
-                self.rightNumbers.append(self.distanceRight.distance())
-                sys.sleep(0.2)
-
-            self.sdl = round(self.standardDeviation(self.leftNumbers) * 3) #creates multiplied sd
-            self.sdr = round(self.standardDeviation(self.rightNumbers) * 3)
-
-            self.lmean = self.meanOfValues(self.leftNumbers) #creates mean
-            self.rmean = self.meanOfValues(self.rightNumbers)
-
-            self.newLeftNumbers = []
-            self.newRightNumbers = []
-
-            for number in self.leftNumbers: #remove values outside the limits
-                if number >= (self.lmean - self.sdl) or number <= (self.lmean + self.sdl):
-                    self.newLeftNumbers.append(number)
-
-            for number in self.rightNumbers: #remove values outside the limits
-                if number >= (self.rmean - self.sdr) or number <= (self.rmean + self.sdr):
-                    self.newRightNumbers.append(number)
-
-            self.leftReading = self.meanOfValues(self.newLeftNumbers) #creates new averages
-            self.rightReading = self.meanOfValues(self.newRightNumbers)
-
-            if self.leftReading < self.rightReading: #returns lowest value
-                return round(self.leftReading)
-            else:
-                return round(self.rightReading)
-        else: #only basic check required
-            self.leftNumbers = []
-            self.rightNumbers = []
-
-            for x in range(0,3):
-                self.leftNumbers.append(self.distanceLeft.distance())
-                self.rightNumbers.append(self.distanceRight.distance())
-
-            if self.leftNumbers[0] < 40 and self.leftNumbers[1] < 40 and self.leftNumbers[2] < 40:
-                return True
-            elif self.rightNumbers[0] < 40 and self.rightNumbers[1] < 40 and self.rightNumbers[2] < 40:
-                return True
-            else:
-                return False
-
-    def calculateUltraDistance(self): #gets the distance from the displacement to the cone
-
-        self.numbers = [] #stores results
-
-        for x in range(0,5):
-
-            self.leftUltra = self.distanceLeft.distance() #grab both distance values
-            self.rightUltra = self.distanceRight.distance()
-            self.average = round((self.leftUltra + self.rightUltra) / 2) #create an average of the values
-            self.distance = math.sqrt((self.average ** 2) - (5**2)) #perform some cheeky pythagoras
-            self.distance = self.distance + self.robotRadius #add on robot radius (means the distance is relative to x,y coord)
-
-            self.numbers.append(self.distance) #add the number to the array
-            sys.sleep(0.2)
-
-        self.sd = round(self.standardDeviation(self.numbers) * 3) #calulate the standardDeviation
-        self.mean = self.meanOfValues(self.numbers) # calulate the mean
-
-        self.newNumbers = []
-
-        for number in self.numbers: #remove values outside the limits
-            if number >= (self.mean - self.sd) or number <= (self.mean + self.sd):
-                self.newNumbers.append(number)
-
-        self.averageReadings = round(self.meanOfValues(self.newNumbers)) #average the new numbers
-        return round(self.averageReadings) #return value
-
-    def alignToCone(self): #aligns the robot to a nearby cone
-
-
     def debug(self,updateScreen = True,debugDelay = 0,color = None): #used solely for debugging, allows time delay, screen update and led change
         if updateScreen == True:
             vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1) #updates screen
-            """vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
-            vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
-            vexiq.lcd_write("Cone: " + str(robot.lookingAtCone()),4)
-            vexiq.lcd_write("Cones: " + str(len(robot.allCones)),5)"""
 
         if color != None:
             self.code = self.colours[color] #sets led colour
@@ -706,17 +621,17 @@ while True:
         if len(robot.allCones) == 0:
             robot.moveBy(150)
             robot.alignToCone()
-            robot.recordNewCone(robot.calculateUltraDistance())
+            robot.recordNewCone(robot.resolveReadings(3))
             robot.moveBy(-10,True)
             robot.rotateTo(-90)
             robot.moveBy(150)
             robot.alignToCone()
-            robot.recordNewCone(robot.calculateUltraDistance())
+            robot.recordNewCone(robot.resolveReadings(3))
             robot.moveBy(-10,True)
             robot.rotateTo(180)
             robot.moveBy(150)
             robot.alignToCone()
-            robot.recordNewCone(robot.calculateUltraDistance())
+            robot.recordNewCone(robot.resolveReadings(3))
             robot.moveToXYA(0,0,0,True)
             for cone in range(0,3):
                 cone = robot.allCones[0]
