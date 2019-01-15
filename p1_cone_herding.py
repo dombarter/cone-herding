@@ -201,12 +201,7 @@ class Robot:
     def moveBy(self,distance,ignoreCone = False): #move the robot forwards by a certain distance
 
         self.currentAngle = self.angle #gets current gyro reading
-
         self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
-
-        if ignoreCone == False: #check for a cone
-            if self.resolveReadings(1) == True: #if cone is in the way
-                return False #robot has been unable to reach the final destination
 
         self.numberOfIterations = self.intify(math.floor(self.cm / 30))
         self.remainder = self.intify(self.cm % 30)
@@ -216,6 +211,11 @@ class Robot:
 
             self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentAngle)
             self.x , self.y = self.resolveResult.x , self.resolveResult.y
+            return True
+
+        elif ignoreCone == False: #check for a cone
+            if self.resolveReadings(1) == True: #if cone is in the way
+                return False #robot has been unable to reach the final destination
 
         else: #going forwards!
 
@@ -598,7 +598,6 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 
 # Test Functions ----------------------------
 
-
 # -------------------------------------------
 
 # Main Program ------------------------------
@@ -616,7 +615,6 @@ while True:
         robot.light("orange",True)
 
         # Motion call ---------------
-
 
         if len(robot.allCones) == 0:
             robot.moveBy(150)
