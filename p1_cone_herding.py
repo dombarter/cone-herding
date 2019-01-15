@@ -316,14 +316,16 @@ class Robot:
         return None
 
     def closeClaw(self): #close the claw
-        self.claw.run_time(70,0.8,True)
-        #self.claw.run_until_position(70,60,True)
+        #self.claw.run(70)
+        #sys.sleep(0.7)
+        self.claw.run_until_position(70,60,True)
         self.claw.hold()
         return True
 
     def openClaw(self): #open the claw
-        self.claw.run_time(-70,0.8)
-        #self.claw.run_until_position(70,0,True)
+        #self.claw.run(-70)
+        #sys.sleep(0.7)
+        self.claw.run_until_position(70,0,True)
         self.claw.off()
         return True
 
@@ -490,7 +492,7 @@ class Robot:
 
             self.intialDistance = self.checkDistance(True) # grab the sighting distance
             if self.intialDistance >= 20: #if the intial is large
-                self.deltaD = round(self.intialDistance - 20) #calulate change in displacement
+                self.deltaD = round(self.intialDistance - (20 - self.robotRadius)) #calulate change in displacement
                 self.moveBy(self.deltaD,True) #move the robot
 
             self.light("yellow",True) #swing align
@@ -504,12 +506,12 @@ class Robot:
 
             for swing in range(3, self.maxSwingAmount + 3): #for number of swings
                 for turn in range(0,swing):
-                    if self.lookingAtCone(): #check if looking at cone
+                    if self.lookingAtCone() or self.lookingAtCone(True): #check if looking at cone
                         self.flag = True
                         break
                     self.rotateBy(self.directionOfSwing * 8) #rotate the robot
                     sys.sleep(0.6)
-                if self.lookingAtCone():
+                if self.lookingAtCone() or self.lookingAtCone(True):
                     self.flag = True
                     break
                 self.directionOfSwing = self.directionOfSwing * -1 #change direction of swing
@@ -525,11 +527,27 @@ class Robot:
                 robot.light("orange",True) #return to program
                 return True
 
-    def lookingAtCone(self): #returns whether the robot is looking at a cone
-        if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
-            return True
+    def lookingAtCone(self,distanceOnly = False): #returns whether the robot is looking at a cone
+        if distanceOnly == False:
+            if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
+                return True
+            else:
+                return False
         else:
-            return False
+            self.leftNumbers = []
+            self.rightNumbers = []
+
+            for x in range(0,3):
+                self.leftNumbers.append(self.distanceLeft.distance())
+                self.rightNumbers.append(self.distanceRight.distance())
+
+            self.lmean = self.meanOfValues(self.leftNumbers)
+            self.rmean = self.meanOfValues(self.rightNumbers)
+
+            if math.fabs(self.lmean - self.rmean) <= 1:
+                return True
+            else:
+                return False
 
     def debug(self,updateScreen = True,debugDelay = 0,color = None): #used solely for debugging, allows time delay, screen update and led change
         if updateScreen == True:
@@ -587,6 +605,8 @@ while True:
     robot.light("blue")
 
     vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1)
+    vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
+    vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
 
     if robot.isActivated():
 
@@ -600,13 +620,18 @@ while True:
             robot.moveBy(150)
             robot.alignToCone()
             robot.recordNewCone(robot.calculateUltraDistance())
-            robot.moveBy(-10)
+            robot.moveBy(-10,True)
             robot.rotateTo(-90)
             robot.moveBy(150)
             robot.alignToCone()
             robot.recordNewCone(robot.calculateUltraDistance())
+            robot.moveBy(-10,True)
+            robot.rotateTo(180)
+            robot.moveBy(150)
+            robot.alignToCone()
+            robot.recordNewCone(robot.calculateUltraDistance())
             robot.moveToXYA(0,0,0,True)
-            for cone in range(0,2):
+            for cone in range(0,3):
                 cone = robot.allCones[0]
                 result = robot.moveToXYA(cone.x,cone.y)
                 if result == False:
