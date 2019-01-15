@@ -27,6 +27,12 @@ class Cone:
         self.herded = False # shows whether the cone has been herded yet
         return None
 
+# Readings class
+class Readings:
+    def __init__(self,left,right):
+        self.left = left
+        self.right = right
+
 # Robot class
 class Robot:
 
@@ -329,9 +335,6 @@ class Robot:
         self.claw.off()
         return True
 
-    def resolveReadings(self): #resolve the location of the cone
-        return None
-
     def resolveXY(self,xCoord,yCoord,distance,rotation): #function to update distaplacement of the robot by calculating new coordinates
 
         self.distance = distance
@@ -398,6 +401,65 @@ class Robot:
             return True
         else:
             return False
+
+    def averageReadings(self,delay = 0.2,repeat = 10,sd_multiplier = 2.5): #gets the readings of the ultrasonic, with many overloads
+
+        self.leftNumbers = [] #variables
+        self.rightNumbers = []
+        self.leftReading = 0
+        self.rightReading = 0
+
+        for x in range(0,repeat): #grabs values
+            self.leftNumbers.append(self.distanceLeft.distance())
+            self.rightNumbers.append(self.distanceRight.distance())
+            sys.sleep(delay)
+
+        self.sdl = round(self.standardDeviation(self.leftNumbers) * sd_multiplier) #creates multiplied sd
+        self.sdr = round(self.standardDeviation(self.rightNumbers) * sd_multiplier)
+
+        self.lmean = self.meanOfValues(self.leftNumbers) #creates mean
+        self.rmean = self.meanOfValues(self.rightNumbers)
+
+        self.newLeftNumbers = [] #new arrays
+        self.newRightNumbers = []
+
+        for number in self.leftNumbers: #remove values outside the limits
+            if number >= (self.lmean - self.sdl) or number <= (self.lmean + self.sdl):
+                self.newLeftNumbers.append(number)
+
+        for number in self.rightNumbers: #remove values outside the limits
+            if number >= (self.rmean - self.sdr) or number <= (self.rmean + self.sdr):
+                self.newRightNumbers.append(number)
+
+        self.leftReading = round(self.meanOfValues(self.newLeftNumbers)) #creates new averages
+        self.rightReading = round(self.meanOfValues(self.newRightNumbers))
+
+        self.newReadings = Readings(self.leftReading,self.rightReading) #creates a new readings class
+
+        return self.newReadings #returns the readings
+
+    def alignToCone(self): #will align the robot to a cone infront of it
+        return None
+
+    def resolveReadings(self,option): #resolve the location of the cone
+        if option == 1: #BASIC DISTANCE CHECK, QUICK TO SEE IF ANYTHING IN THE WAY
+
+            continue
+
+        elif option == 2: #UNALIGNED DISTANCE CHECK, WILL RETURN SHORTEST DISTANCE
+
+            continue
+
+        elif option == 3: #ALIGNED DISTANCE CHECK, WILL RETURN EXACT DISTANCE TO OBJECT
+
+            continue
+
+        else: #IF NO VALID OPTION PICKED
+
+            return None
+
+
+        return None
 
     # ---------------------------------------
 
