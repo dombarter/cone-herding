@@ -209,11 +209,12 @@ class Robot:
         if self.numberOfIterations < 0: #going backwards!
             self.drivetrain.drive_until(30,self.cm*10) # no need to check for cones so just go for it
 
-            self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentAngle)
+            self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentAngle) #update coordinates
             self.x , self.y = self.resolveResult.x , self.resolveResult.y
+
             return True
 
-        elif ignoreCone == False: #check for a cone
+        if ignoreCone == False: #check for a cone
             if self.resolveReadings(1) == True: #if cone is in the way
                 return False #robot has been unable to reach the final destination
 
@@ -458,8 +459,9 @@ class Robot:
             self.light("yellow",True) #swing align
 
             self.maxSwingAmount = 5 #set the number of times the robot will swing from side to side
-            self.intialSwingAmount = 4
+            self.intialSwingAmount = 4 #how many turns to do intially
             self.flag = False #shows if the robot has been successful in the sweeps
+            self.turnAmount = 8 #how far to rotate the robot by
 
             self.readingsResult = self.averageReadings(0,5)
             if self.readingsResult.left > self.readingsResult.left: #set the intial swing direction
@@ -471,7 +473,7 @@ class Robot:
                 if self.lookingAtCone():
                     self.flag = True
                     break
-                self.rotateBy(self.directionOfSwing * 8) #rotate the robot
+                self.rotateBy(self.directionOfSwing * self.turnAmount) #rotate the robot
                 sys.sleep(0.2)
 
             self.direction = self.direction * -1
@@ -482,7 +484,7 @@ class Robot:
                         if self.lookingAtCone(): #check if looking at cone
                             self.flag = True
                             break
-                        self.rotateBy(self.directionOfSwing * 8) #rotate the robot
+                        self.rotateBy(self.directionOfSwing * self.turnAmount) #rotate the robot
                         sys.sleep(0.6)
                     if self.lookingAtCone():
                         self.flag = True
@@ -491,7 +493,7 @@ class Robot:
 
             # robot now aligned, final move to the robot
 
-            if self.flag == False:
+            if self.flag == False: #robot was unable to align
                 return False
             else:
                 self.light("violet",True) #ultra align
