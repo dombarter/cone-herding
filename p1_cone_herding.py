@@ -1,5 +1,5 @@
 """__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":212},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
+{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":214},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
 
 # external library imports ------------------
 
@@ -318,7 +318,7 @@ class Robot:
     def closeClaw(self): #close the claw
         #self.claw.run(70)
         #sys.sleep(0.7)
-        self.claw.run_until_position(70,60,True)
+        self.claw.run_until_position(70,65,True)
         self.claw.hold()
         return True
 
@@ -506,12 +506,12 @@ class Robot:
 
             for swing in range(4, self.maxSwingAmount + 4): #for number of swings
                 for turn in range(0,swing):
-                    if self.lookingAtCone(True)  or self.lookingAtCone(): #check if looking at cone
+                    if self.lookingAtCone(True,2.5) and self.lookingAtCone(): #check if looking at cone
                         self.flag = True
                         break
                     self.rotateBy(self.directionOfSwing * 8) #rotate the robot
                     sys.sleep(0.6)
-                if self.lookingAtCone(True) or self.lookingAtCone():
+                if self.lookingAtCone(True,2.5) and self.lookingAtCone():
                     self.flag = True
                     break
                 self.directionOfSwing = self.directionOfSwing * -1 #change direction of swing
@@ -527,7 +527,7 @@ class Robot:
                 robot.light("orange",True) #return to program
                 return True
 
-    def lookingAtCone(self,distanceOnly = False,range = 0.8): #returns whether the robot is looking at a cone
+    def lookingAtCone(self,distanceOnly = False,accuracy = 0.8): #returns whether the robot is looking at a cone
         if distanceOnly == False:
             if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
                 return True
@@ -544,7 +544,7 @@ class Robot:
             self.lmean = self.meanOfValues(self.leftNumbers)
             self.rmean = self.meanOfValues(self.rightNumbers)
 
-            if math.fabs(self.lmean - self.rmean) <= range:
+            if math.fabs(self.lmean - self.rmean) <= accuracy:
                 return True
             else:
                 return False
@@ -581,10 +581,11 @@ UltraRight  = vexiq.DistanceSensor(11, vexiq.UNIT_CM)
 TouchLed    = vexiq.TouchLed(12)
 
 import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 214)
 #endregion config
 
-# DRIVETRAIN: 210 for foam tiles
+# DRIVETRAIN: 212 for foam tiles
+# DRIVETRAIN: 214 for carpet
 
 # -------------------------------------------
 
