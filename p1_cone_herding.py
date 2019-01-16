@@ -474,9 +474,9 @@ class Robot:
                     self.flag = True
                     break
                 self.rotateBy(self.directionOfSwing * self.turnAmount) #rotate the robot
-                sys.sleep(0.2)
+                sys.sleep(0.1)
 
-            self.direction = self.direction * -1
+            self.directionOfSwing = self.directionOfSwing * -1
 
             if self.flag == False: #if the cone was not found
                 for y in range(((self.intialSwingAmount*2) + 1), (self.maxSwingAmount + ((self.intialSwingAmount*2) + 1))): #for number of swings
@@ -485,7 +485,7 @@ class Robot:
                             self.flag = True
                             break
                         self.rotateBy(self.directionOfSwing * self.turnAmount) #rotate the robot
-                        sys.sleep(0.6)
+                        sys.sleep(0.1)
                     if self.lookingAtCone():
                         self.flag = True
                         break
@@ -608,8 +608,6 @@ while True:
     robot.light("blue")
 
     vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1)
-    vexiq.lcd_write("LU: " + str(round(robot.distanceLeft.distance())),2)
-    vexiq.lcd_write("RU: " + str(round(robot.distanceRight.distance())),3)
 
     if robot.isActivated():
 
@@ -618,6 +616,7 @@ while True:
 
         # Motion call ---------------
 
+        """
         if len(robot.allCones) == 0:
             robot.moveBy(150)
             robot.alignToCone()
@@ -643,9 +642,9 @@ while True:
                     robot.deliverCone()
                     del robot.allCones[0]
                 else:
-                    robot.moveToXYA(0,0,0,True)
+                    robot.moveToXYA(0,0,0,True)"""
 
-        #robot.alignToCone()
+        robot.alignToCone()
 
         # ---------------------------
 
