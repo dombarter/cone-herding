@@ -311,9 +311,9 @@ class Robot:
         return None
 
     def lowerArm(self): #lower the arm
-        self.armLeft.run_to_position(30,250,True)
-        self.armRight.run_to_position(30,250,True)
-        while self.armLeft.position() < 250 and self.armRight.position() < 250: #stops the function returning whilst still moving
+        self.armLeft.run_to_position(30,235,True)
+        self.armRight.run_to_position(30,235,True)
+        while self.armLeft.position() < 235 and self.armRight.position() < 235: #stops the function returning whilst still moving
             continue
         self.armLeft.hold()
         self.armRight.hold()
@@ -322,7 +322,7 @@ class Robot:
     def closeClaw(self): #close the claw
         #self.claw.run(70)
         #sys.sleep(0.7)
-        self.claw.run_until_position(70,65,True)
+        self.claw.run_until_position(70,68,True)
         self.claw.hold()
         return True
 
@@ -531,7 +531,7 @@ class Robot:
 
         elif option == 4:  #WILL TEST TO FIND THE DISTANCE BETWEEN THE TWO READINGS, SEE HOW EQUAL THEY ARE
 
-            self.readingsResult = self.averageReadings() #grabs readings
+            self.readingsResult = self.averageReadings(0) #grabs readings
 
             self.deltaU = math.fabs(round(self.readingsResult.left - self.readingsResult.right)) #finds absolute difference
             if self.deltaU <= distance: #checks to see if difference is within range
@@ -544,7 +544,7 @@ class Robot:
             return None
 
     def lookingAtCone(self): #returns whether the robot is looking at a cone using colour sensors
-        if (self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5) and (self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5):
+        if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5 or self.colorLeft.named_color() == 6) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5 or self.colorRight.named_color() == 6):
             return True
         else:
             return False
