@@ -464,7 +464,7 @@ class Robot:
             self.turnAmount = 8 #how far to rotate the robot by
 
             self.readingsResult = self.averageReadings(0,5)
-            if self.readingsResult.left > self.readingsResult.left: #set the intial swing direction
+            if self.readingsResult.left > self.readingsResult.right: #set the intial swing direction
                 self.directionOfSwing = 1 #turning right
             else:
                 self.directionOfSwing = -1 #turning left
@@ -474,7 +474,6 @@ class Robot:
                     self.flag = True
                     break
                 self.rotateBy(self.directionOfSwing * self.turnAmount) #rotate the robot
-                sys.sleep(0.1)
 
             self.directionOfSwing = self.directionOfSwing * -1
 
@@ -485,7 +484,6 @@ class Robot:
                             self.flag = True
                             break
                         self.rotateBy(self.directionOfSwing * self.turnAmount) #rotate the robot
-                        sys.sleep(0.1)
                     if self.lookingAtCone():
                         self.flag = True
                         break
