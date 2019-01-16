@@ -202,7 +202,6 @@ class Robot:
 
         self.currentAngle = self.angle #gets current gyro reading
         self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
-
         self.numberOfIterations = self.intify(math.floor(self.cm / 30))
         self.remainder = self.intify(self.cm % 30)
 
@@ -213,44 +212,42 @@ class Robot:
             self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
             return True
+        else:
+            if ignoreCone == False: #check for a cone
+                if self.resolveReadings(1) == True: #if cone is in the way
+                    return False #robot has been unable to reach the final destination
 
-        if ignoreCone == False: #check for a cone
-            if self.resolveReadings(1) == True: #if cone is in the way
-                return False #robot has been unable to reach the final destination
+            if self.remainder == 0: #if distance is a multiple of 15
 
-            else: #going forwards!
+                for i in range(0,self.numberOfIterations):
 
-                if self.remainder == 0: #if distance is a multiple of 15
+                    if ignoreCone == False:
+                        if self.resolveReadings(1) == True: #if cone is in the way
+                            return False #robot has been unable to reach the final destination
 
-                    for i in range(0,self.numberOfIterations):
-
-                        if ignoreCone == False:
-                            if self.resolveReadings(1) == True: #if cone is in the way
-                                return False #robot has been unable to reach the final destination
-
-                        self.drivetrain.drive_until(30,300) #move robot by 15cm
-                        self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
-                        self.x , self.y = self.resolveResult.x , self.resolveResult.y
-
-                    return True #robot has been able to reach destination
-
-                else: #if distance is not a multiple of 15
-
-                    for i in range(0,self.numberOfIterations):
-
-                        self.drivetrain.drive_until(30,300)
-                        self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
-                        self.x , self.y = self.resolveResult.x , self.resolveResult.y
-
-                        if ignoreCone == False:
-                            if self.resolveReadings(1) == True: #if cone is in the way
-                                return False #robot has been unable to reach the final destination
-
-                    self.drivetrain.drive_until(30,self.remainder*10)
-                    self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
+                    self.drivetrain.drive_until(30,300) #move robot by 15cm
+                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
-                    return True #robot has been able to reach destination
+                return True #robot has been able to reach destination
+
+            else: #if distance is not a multiple of 15
+
+                for i in range(0,self.numberOfIterations):
+
+                    self.drivetrain.drive_until(30,300)
+                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
+                    self.x , self.y = self.resolveResult.x , self.resolveResult.y
+
+                    if ignoreCone == False:
+                        if self.resolveReadings(1) == True: #if cone is in the way
+                            return False #robot has been unable to reach the final destination
+
+                self.drivetrain.drive_until(30,self.remainder*10)
+                self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
+                self.x , self.y = self.resolveResult.x , self.resolveResult.y
+
+                return True #robot has been able to reach destination
 
     def rotateBy(self,degrees): #turn the robot, positive for right, negative for left
 
@@ -643,10 +640,10 @@ while True:
                     robot.moveToXYA(0,0,0,True)"""
 
         robot.moveBy(60)
-        robot.alignToCone()
-        robot.collectCone()
-        robot.moveToXYA(0,0,180)
-        robot.deliverCone()
+        #robot.alignToCone()
+        #robot.collectCone()
+        #robot.moveToXYA(0,0,180)
+        #robot.deliverCone()
 
         # ---------------------------
 
