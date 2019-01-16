@@ -218,39 +218,39 @@ class Robot:
             if self.resolveReadings(1) == True: #if cone is in the way
                 return False #robot has been unable to reach the final destination
 
-        else: #going forwards!
+            else: #going forwards!
 
-            if self.remainder == 0: #if distance is a multiple of 15
+                if self.remainder == 0: #if distance is a multiple of 15
 
-                for i in range(0,self.numberOfIterations):
+                    for i in range(0,self.numberOfIterations):
 
-                    if ignoreCone == False:
-                        if self.resolveReadings(1) == True: #if cone is in the way
-                            return False #robot has been unable to reach the final destination
+                        if ignoreCone == False:
+                            if self.resolveReadings(1) == True: #if cone is in the way
+                                return False #robot has been unable to reach the final destination
 
-                    self.drivetrain.drive_until(30,300) #move robot by 15cm
-                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
+                        self.drivetrain.drive_until(30,300) #move robot by 15cm
+                        self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
+                        self.x , self.y = self.resolveResult.x , self.resolveResult.y
+
+                    return True #robot has been able to reach destination
+
+                else: #if distance is not a multiple of 15
+
+                    for i in range(0,self.numberOfIterations):
+
+                        self.drivetrain.drive_until(30,300)
+                        self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
+                        self.x , self.y = self.resolveResult.x , self.resolveResult.y
+
+                        if ignoreCone == False:
+                            if self.resolveReadings(1) == True: #if cone is in the way
+                                return False #robot has been unable to reach the final destination
+
+                    self.drivetrain.drive_until(30,self.remainder*10)
+                    self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
-                return True #robot has been able to reach destination
-
-            else: #if distance is not a multiple of 15
-
-                for i in range(0,self.numberOfIterations):
-
-                    self.drivetrain.drive_until(30,300)
-                    self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
-                    self.x , self.y = self.resolveResult.x , self.resolveResult.y
-
-                    if ignoreCone == False:
-                        if self.resolveReadings(1) == True: #if cone is in the way
-                            return False #robot has been unable to reach the final destination
-
-                self.drivetrain.drive_until(30,self.remainder*10)
-                self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
-                self.x , self.y = self.resolveResult.x , self.resolveResult.y
-
-                return True #robot has been able to reach destination
+                    return True #robot has been able to reach destination
 
     def rotateBy(self,degrees): #turn the robot, positive for right, negative for left
 
@@ -522,7 +522,7 @@ class Robot:
 
         elif option == 3: #ALIGNED DISTANCE CHECK, WILL RETURN EXACT DISTANCE TO OBJECT
 
-            self.readingsResult = self.averageReadings() #grabs readings
+            self.readingsResult = self.averageReadings(0.075,15) #grabs readings with same delay but 15 readings
 
             self.average = round((self.readingsResult.left + self.readingsResult.right) / 2) #create an average of the values
             self.distance = math.sqrt((self.average ** 2) - (5**2)) #perform some cheeky pythagoras
@@ -642,7 +642,11 @@ while True:
                 else:
                     robot.moveToXYA(0,0,0,True)"""
 
+        robot.moveBy(60)
         robot.alignToCone()
+        robot.collectCone()
+        robot.moveToXYA(0,0,180)
+        robot.deliverCone()
 
         # ---------------------------
 
