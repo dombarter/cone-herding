@@ -448,7 +448,7 @@ class Robot:
             self.intialDistance = self.resolveReadings(2) # grab the sighting distance
 
             if self.intialDistance >= 20: #if the intial is large
-                self.deltaD = round(self.intialDistance - (20 - self.robotRadius)) #calulate change in displacement
+                self.deltaD = round(self.intialDistance - (21 - self.robotRadius)) #calulate change in displacement
                 self.moveBy(self.deltaD,True) #move the robot
 
             # line the robot up to be pointing at the cone
@@ -456,7 +456,7 @@ class Robot:
             self.light("yellow",True) #swing align
 
             self.maxSwingAmount = 5 #set the number of times the robot will swing from side to side
-            self.intialSwingAmount = 4 #how many turns to do intially
+            self.intialSwingAmount = 5 #how many turns to do intially
             self.flag = False #shows if the robot has been successful in the sweeps
             self.turnAmount = 8 #how far to rotate the robot by
 
@@ -493,11 +493,13 @@ class Robot:
             else:
                 self.light("violet",True) #ultra align
 
-                self.deltaD = round(self.resolveReadings(3) - 20)
+                self.uReadings = self.resolveReadings(3)
+
+                self.deltaD = round(self.uReadings - 21)
                 self.moveBy(self.deltaD,True)
 
                 robot.light("orange",True) #return to program
-                return True
+                return self.uReadings
 
     def resolveReadings(self,option,distance = 1): #resolve the location of the cone using the ultrasonic sensors
 
@@ -611,39 +613,32 @@ while True:
 
         # Motion call ---------------
 
-        """
         if len(robot.allCones) == 0:
             robot.moveBy(150)
-            robot.alignToCone()
-            robot.recordNewCone(robot.resolveReadings(3))
-            robot.moveBy(-10,True)
+            aResult = robot.alignToCone()
+            if aResult != False:
+                robot.recordNewCone(aResult)
+            robot.moveBy(-10)
             robot.rotateTo(-90)
             robot.moveBy(150)
-            robot.alignToCone()
-            robot.recordNewCone(robot.resolveReadings(3))
-            robot.moveBy(-10,True)
-            robot.rotateTo(180)
-            robot.moveBy(150)
-            robot.alignToCone()
-            robot.recordNewCone(robot.resolveReadings(3))
+
+            aResult = robot.alignToCone()
+            if aResult != False:
+                robot.recordNewCone(aResult)
+            robot.moveBy(-10)
             robot.moveToXYA(0,0,0,True)
-            for cone in range(0,3):
+
+            for cone in range(0,len(robot.allCones)):
                 cone = robot.allCones[0]
                 result = robot.moveToXYA(cone.x,cone.y)
                 if result == False:
                     robot.alignToCone()
                     robot.collectCone()
-                    robot.moveToXYA(0,0,None)
+                    robot.moveToXYA(0,0)
                     robot.deliverCone()
                     del robot.allCones[0]
                 else:
-                    robot.moveToXYA(0,0,0,True)"""
-
-        robot.moveBy(60)
-        #robot.alignToCone()
-        #robot.collectCone()
-        #robot.moveToXYA(0,0,180)
-        #robot.deliverCone()
+                    robot.moveToXYA(0,0,0,True)
 
         # ---------------------------
 
