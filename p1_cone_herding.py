@@ -52,7 +52,8 @@ class Robot:
     # object instantiation ------------------
 
     def __init__(self,dt,armL,armR,claw,colorLeft,colorRight,distanceLeft,distanceRight,led): #intiiation function
-        self.drivetrain = dt
+
+        self.drivetrain = dt #sets hardware variables
         self.colorRight = colorRight
         self.colorLeft = colorLeft
         self.distanceLeft = distanceLeft
@@ -62,15 +63,12 @@ class Robot:
         self.armRight = armR
         self.claw = claw
 
-        self.armLeft.off() #holds both of the arm motors so the arm doesnt fall down and get in the way
+        self.armLeft.off() #turns the claw and arm motors off
         self.armRight.off()
         self.claw.off()
 
         self.colorLeft.set_proximity_threshold(0) # sets the accuracy and distance on the colour sensors
         self.colorRight.set_proximity_threshold(0)
-
-        #self.colorLeft.led_on() #turns on the leds
-        #self.colorRight.led_on()
 
 
     # ---------------------------------------
@@ -98,11 +96,12 @@ class Robot:
 
     def standardDeviation(self,numbers): #used to get standardDeviation of a number of numbers
         self.sd = 0
-        self.mean = self.meanOfValues(numbers)
+        self.mean = self.meanOfValues(numbers) #gets mean of all values
         for x in numbers:
             self.sd = self.sd + ((x - self.mean) ** 2)
-        self.sd = self.sd / len(numbers)
-        self.sd = math.sqrt(self.sd)
+
+        self.sd = self.sd / len(numbers) #calculates variance
+        self.sd = math.sqrt(self.sd) #calculates standard deviation
         return round(self.sd)
 
     # ---------------------------------------
@@ -174,7 +173,7 @@ class Robot:
         sys.sleep(0.25)
         self.lowerArm()
         sys.sleep(0.25)
-        self.rotateBy(-5)
+        self.rotateBy(-5) #do the wiggle!
         self.rotateBy(10)
         self.rotateBy(-5)
         self.moveBy(5,True)
@@ -306,29 +305,25 @@ class Robot:
         self.armRight.run_to_position(100,0,True)
         while self.armLeft.position() > 0 and self.armRight.position() > 0: #stops the function returning whilst still moving
             continue
-        self.armLeft.off()
+        self.armLeft.off() #turns the motors off in their new position
         self.armRight.off()
         return None
 
     def lowerArm(self): #lower the arm
-        self.armLeft.run_to_position(30,235,True)
-        self.armRight.run_to_position(30,235,True)
-        while self.armLeft.position() < 235 and self.armRight.position() < 235: #stops the function returning whilst still moving
+        self.armLeft.run_to_position(30,230,True)
+        self.armRight.run_to_position(30,230,True)
+        while self.armLeft.position() < 230 and self.armRight.position() < 230: #stops the function returning whilst still moving
             continue
-        self.armLeft.hold()
+        self.armLeft.hold() #holds the motors in their new position
         self.armRight.hold()
         return None
 
     def closeClaw(self): #close the claw
-        #self.claw.run(70)
-        #sys.sleep(0.7)
         self.claw.run_until_position(70,68,True)
         self.claw.hold()
         return True
 
     def openClaw(self): #open the claw
-        #self.claw.run(-70)
-        #sys.sleep(0.7)
         self.claw.run_until_position(70,0,True)
         self.claw.off()
         return True
@@ -495,11 +490,12 @@ class Robot:
 
                 self.uReadings = self.resolveReadings(3)
 
-                self.deltaD = round(self.uReadings - 21)
+                self.deltaD = round(self.uReadings - 21) #creates distance to the cone
                 self.moveBy(self.deltaD,True)
 
                 robot.light("orange",True) #return to program
-                return self.uReadings
+
+                return self.uReadings #returns distance to cone (to reduce wait time)
 
     def resolveReadings(self,option,distance = 1): #resolve the location of the cone using the ultrasonic sensors
 
@@ -585,7 +581,7 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 214)
 #endregion config
 
 # DRIVETRAIN: 212 for foam tiles
-# DRIVETRAIN: 214 for carpet
+# DRIVETRAIN: 214 for carpet (however ultra is a bit unreliable on carpet)
 
 # -------------------------------------------
 
@@ -603,8 +599,7 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 
 while True:
     robot.light("blue")
-
-    vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1)
+    vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1) #standard screen output
 
     if robot.isActivated():
 
@@ -613,35 +608,28 @@ while True:
 
         # Motion call ---------------
 
-        if len(robot.allCones) == 0:
-            robot.moveBy(150)
-            aResult = robot.alignToCone()
-            if aResult != False:
-                robot.recordNewCone(aResult)
-            robot.moveBy(-10)
-            robot.rotateTo(-90)
-            robot.moveBy(150)
+        robot.moveBy(150)
+        aResult = robot.alignToCone()
+        if aResult != False:
+            robot.recordNewCone(aResult)
+        robot.rotateTo(-90)
+        
+        robot.moveBy(150)
+        aResult = robot.alignToCone()
+        if aResult != False:
+            robot.recordNewCone(aResult)
 
-            aResult = robot.alignToCone()
-            if aResult != False:
-                robot.recordNewCone(aResult)
-            robot.moveBy(-10)
-            robot.moveToXYA(0,0,0,True)
-
-            for cone in range(0,len(robot.allCones)):
-                cone = robot.allCones[0]
-                result = robot.moveToXYA(cone.x,cone.y)
-                if result == False:
-                    robot.alignToCone()
-                    robot.collectCone()
-                    robot.moveToXYA(0,0)
-                    robot.deliverCone()
-                    del robot.allCones[0]
-                else:
-                    robot.moveToXYA(0,0,0,True)
+        for cone in range(0,len(robot.allCones)):
+            cone = robot.allCones[0]
+            result = robot.moveToXYA(cone.x,cone.y)
+            robot.alignToCone()
+            robot.collectCone()
+            robot.moveToXYA(0,0)
+            robot.deliverCone()
+            del robot.allCones[0]
 
         # ---------------------------
 
-        sys.sleep(0.5)
+        sys.sleep(0.2)
 
 # -------------------------------------------
