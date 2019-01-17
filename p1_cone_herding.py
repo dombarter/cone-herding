@@ -461,6 +461,8 @@ class Robot:
             else:
                 self.directionOfSwing = -1 #turning left
 
+            #self.lightOn = False
+
             for x in range(0,self.intialSwingAmount): #intial swing
                 if self.lookingAtCone():
                     self.flag = True
@@ -480,6 +482,18 @@ class Robot:
                         self.flag = True
                         break
                     self.directionOfSwing = self.directionOfSwing * -1 #change direction of swing
+
+                    """if self.lightOn == True:
+                        self.lightOn = False
+                        self.colorLeft.led_off()
+                        self.colorRight.led_off()
+                    else:
+                        self.lightOn = True
+                        self.colorLeft.led_on()
+                        self.colorRight.led_on()"""
+
+            """self.colorLeft.led_off()
+            self.colorRight.led_off()"""
 
             # robot now aligned, final move to the robot
 
@@ -612,6 +626,18 @@ while True:
         if aResult != False:
             robot.recordNewCone(aResult)
         robot.rotateTo(-90)
+
+        robot.moveBy(150)
+        aResult = robot.alignToCone()
+        if aResult != False:
+            robot.recordNewCone(aResult)
+        robot.rotateTo(-180)
+
+        robot.moveBy(150)
+        aResult = robot.alignToCone()
+        if aResult != False:
+            robot.recordNewCone(aResult)
+        robot.rotateTo(90)
 
         robot.moveBy(150)
         aResult = robot.alignToCone()
