@@ -63,9 +63,11 @@ class Robot:
         self.armRight = armR
         self.claw = claw
 
-        self.armLeft.off() #turns the claw and arm motors off
-        self.armRight.off()
+        #self.armLeft.off() #turns the claw and arm motors off
+        #self.armRight.off()
         self.claw.off()
+        self.armLeft.hold()
+        self.armRight.hold()
 
         self.colorLeft.set_proximity_threshold(0) # sets the accuracy and distance on the colour sensors
         self.colorRight.set_proximity_threshold(0)
@@ -305,8 +307,8 @@ class Robot:
         self.armRight.run_to_position(100,0,True)
         while self.armLeft.position() > 0 and self.armRight.position() > 0: #stops the function returning whilst still moving
             continue
-        self.armLeft.off() #turns the motors off in their new position
-        self.armRight.off()
+        self.armLeft.hold() #turns the motors off in their new position
+        self.armRight.hold()
         return None
 
     def lowerArm(self): #lower the arm
@@ -325,7 +327,7 @@ class Robot:
         return None
 
     def closeClaw(self): #close the claw
-        self.claw.run_until_position(70,110,True)
+        self.claw.run_until_position(70,125,True)
         self.claw.hold()
         return True
 
@@ -449,7 +451,7 @@ class Robot:
             self.intialDistance = self.resolveReadings(2) # grab the sighting distance
 
             if self.intialDistance >= 20: #if the intial is large
-                self.deltaD = round(self.intialDistance - (20 - self.robotRadius)) #calulate change in displacement
+                self.deltaD = round(self.intialDistance - (21 - self.robotRadius)) #calulate change in displacement
                 self.moveBy(self.deltaD,True) #move the robot
 
             # line the robot up to be pointing at the cone
@@ -498,7 +500,7 @@ class Robot:
 
                 self.uReadings = self.resolveReadings(3)
 
-                self.deltaD = round(self.uReadings - 20) #creates distance to the cone
+                self.deltaD = round(self.uReadings - 21) #creates distance to the cone
                 self.moveBy(self.deltaD,True)
 
                 robot.light("orange",True) #return to program
