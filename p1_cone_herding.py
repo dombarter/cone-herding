@@ -310,13 +310,13 @@ class Robot:
         return None
 
     def lowerArm(self): #lower the arm
-        self.armLeft.run_to_position(30,250,True)
-        self.armRight.run_to_position(30,250,True)
+        self.armLeft.run_to_position(30,240,True)
+        self.armRight.run_to_position(30,240,True)
         self.giveUp = 0
-        while self.armLeft.position() < 250 and self.armRight.position() < 250: #stops the function returning whilst still moving
+        while self.armLeft.position() < 240 and self.armRight.position() < 240: #stops the function returning whilst still moving
             self.giveUp = self.giveUp + 1
             sys.sleep(0.25)
-            if self.giveUp == 10:
+            if self.giveUp == 6:
                 break
             else:
                 continue
@@ -325,7 +325,7 @@ class Robot:
         return None
 
     def closeClaw(self): #close the claw
-        self.claw.run_until_position(70,80,True)
+        self.claw.run_until_position(70,110,True)
         self.claw.hold()
         return True
 
@@ -449,7 +449,7 @@ class Robot:
             self.intialDistance = self.resolveReadings(2) # grab the sighting distance
 
             if self.intialDistance >= 20: #if the intial is large
-                self.deltaD = round(self.intialDistance - (21 - self.robotRadius)) #calulate change in displacement
+                self.deltaD = round(self.intialDistance - (20 - self.robotRadius)) #calulate change in displacement
                 self.moveBy(self.deltaD,True) #move the robot
 
             # line the robot up to be pointing at the cone
@@ -498,7 +498,7 @@ class Robot:
 
                 self.uReadings = self.resolveReadings(3)
 
-                self.deltaD = round(self.uReadings - 21) #creates distance to the cone
+                self.deltaD = round(self.uReadings - 20) #creates distance to the cone
                 self.moveBy(self.deltaD,True)
 
                 robot.light("orange",True) #return to program
