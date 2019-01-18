@@ -1,5 +1,5 @@
 """__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":212},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
+{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":214},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
 
 # external library imports ------------------
 
@@ -310,16 +310,22 @@ class Robot:
         return None
 
     def lowerArm(self): #lower the arm
-        self.armLeft.run_to_position(30,230,True)
-        self.armRight.run_to_position(30,230,True)
-        while self.armLeft.position() < 230 and self.armRight.position() < 230: #stops the function returning whilst still moving
-            continue
+        self.armLeft.run_to_position(30,250,True)
+        self.armRight.run_to_position(30,250,True)
+        self.giveUp = 0
+        while self.armLeft.position() < 250 and self.armRight.position() < 250: #stops the function returning whilst still moving
+            self.giveUp = self.giveUp + 1
+            sys.sleep(0.25)
+            if self.giveUp == 10:
+                break
+            else:
+                continue
         self.armLeft.hold() #holds the motors in their new position
         self.armRight.hold()
         return None
 
     def closeClaw(self): #close the claw
-        self.claw.run_until_position(70,70,True)
+        self.claw.run_until_position(70,80,True)
         self.claw.hold()
         return True
 
@@ -424,8 +430,8 @@ class Robot:
             if number >= (self.rmean - self.sdr) or number <= (self.rmean + self.sdr):
                 self.newRightNumbers.append(number)
 
-        self.leftReading = round(self.meanOfValues(self.newLeftNumbers)) #creates new averages
-        self.rightReading = round(self.meanOfValues(self.newRightNumbers))
+        self.leftReading = round(self.meanOfValues(self.newLeftNumbers),2) #creates new averages
+        self.rightReading = round(self.meanOfValues(self.newRightNumbers),2)
 
         self.newReadings = Readings(self.leftReading,self.rightReading) #creates a new readings class
 
@@ -483,18 +489,6 @@ class Robot:
                         break
                     self.directionOfSwing = self.directionOfSwing * -1 #change direction of swing
 
-                    """if self.lightOn == True:
-                        self.lightOn = False
-                        self.colorLeft.led_off()
-                        self.colorRight.led_off()
-                    else:
-                        self.lightOn = True
-                        self.colorLeft.led_on()
-                        self.colorRight.led_on()"""
-
-            """self.colorLeft.led_off()
-            self.colorRight.led_off()"""
-
             # robot now aligned, final move to the robot
 
             if self.flag == False: #robot was unable to align
@@ -542,9 +536,12 @@ class Robot:
 
             self.readingsResult = self.averageReadings(0) #grabs readings
 
-            self.deltaU = math.fabs(round(self.readingsResult.left - self.readingsResult.right)) #finds absolute difference
-            if self.deltaU <= distance: #checks to see if difference is within range
-                return True
+            if self.readingsResult.left < 30 and self.readingsResult.right < 30:
+                self.deltaU = math.fabs(self.readingsResult.left - self.readingsResult.right) #finds absolute difference
+                if self.deltaU <= distance: #checks to see if difference is within range
+                    return True
+                else:
+                    return False
             else:
                 return False
 
@@ -553,7 +550,7 @@ class Robot:
             return None
 
     def lookingAtCone(self): #returns whether the robot is looking at a cone using colour sensors
-        if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5 or self.colorLeft.named_color() == 6) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5 or self.colorRight.named_color() == 6):
+        if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5 or self.colorLeft.named_color() == 6 or self.colorLeft.named_color() == 7) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5 or self.colorRight.named_color() == 6 or self.colorRight.named_color() == 7):
             return True
         else:
             return False
@@ -590,7 +587,7 @@ UltraRight  = vexiq.DistanceSensor(11, vexiq.UNIT_CM)
 TouchLed    = vexiq.TouchLed(12)
 
 import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 214)
 #endregion config
 
 # DRIVETRAIN: 212 for foam tiles
@@ -613,6 +610,8 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 while True:
     robot.light("blue")
     vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1) #standard screen output
+    vexiq.lcd_write("Looking At Cone: " + str(robot.lookingAtCone()),2)
+
 
     if robot.isActivated():
 
@@ -620,6 +619,7 @@ while True:
         robot.light("orange",True)
 
         # Motion call ---------------
+
 
         robot.moveBy(150)
         aResult = robot.alignToCone()
@@ -639,11 +639,6 @@ while True:
             robot.recordNewCone(aResult)
         robot.rotateTo(90)
 
-        robot.moveBy(150)
-        aResult = robot.alignToCone()
-        if aResult != False:
-            robot.recordNewCone(aResult)
-
         for cone in range(0,len(robot.allCones)):
             cone = robot.allCones[0]
             result = robot.moveToXYA(cone.x,cone.y)
@@ -652,6 +647,9 @@ while True:
             robot.moveToXYA(0,0)
             robot.deliverCone()
             del robot.allCones[0]
+
+        #robot.alignToCone()
+        #robot.collectCone()
 
         # ---------------------------
 
