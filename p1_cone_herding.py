@@ -395,7 +395,8 @@ class Robot:
         self.duplicateCone = False
 
         for cone in self.allCones: #for all the cones currently in the field
-            self.distanceBetweenCones = self.calculateDeltaD(cone.x,cone.y,self.coneLocation.x,self.coneLocation.y) # finds the distance between new cone and cone in question
+            # finds the distance between new cone and cone in question
+            self.distanceBetweenCones = self.calculateDeltaD(cone.x,cone.y,self.coneLocation.x,self.coneLocation.y)
             if self.distanceBetweenCones < 20: #20 being cone radius * 2 | detects a duplicate cone
                 cone.x = (cone.x + self.coneLocation.x) / 2 #updates cone location if it was a duplicate
                 cone.y = (cone.y + self.coneLocation.y) / 2
@@ -408,7 +409,7 @@ class Robot:
         else:
             return False
 
-    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 1.5): #gets the readings of the ultrasonic, with many overloads
+    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 2.5): #gets the readings of the ultrasonic, with many overloads
 
         self.leftNumbers = [] #variables
         self.rightNumbers = []
@@ -532,11 +533,7 @@ class Robot:
 
         elif option == 3: #ALIGNED DISTANCE CHECK, WILL RETURN EXACT DISTANCE TO OBJECT
 
-            self.readingsResult = self.averageReadings(0.1,15) #grabs readings
-            if self.readingsResult.left < self.readingsResult.right: #checks to see which reading is lower
-                self.readingsResult = self.readingsResult.left
-            else:
-                self.readingsResult = self.readingsResult.right
+            self.readingsResult = self.resolveReadings(2) #grabs readings
 
             self.distance = math.sqrt((self.readingsResult ** 2) - (5**2)) #perform some cheeky pythagoras
             self.distance = round(self.distance + self.robotRadius) #add on robot radius (means the distance is relative to x,y coord)
