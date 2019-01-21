@@ -175,10 +175,13 @@ class Robot:
         sys.sleep(0.25)
         self.lowerArm()
         sys.sleep(0.25)
+        self.moveBy(-10,True)
+        self.moveBy(10,True)
         self.rotateBy(-10) #do the wiggle!
         self.rotateBy(20)
         self.rotateBy(-10)
         self.moveBy(10,True)
+        self.moveBy(-2,True)
         sys.sleep(0.25)
         self.closeClaw()
         sys.sleep(0.25)
@@ -313,11 +316,11 @@ class Robot:
         return None
 
     def lowerArm(self): #lower the arm
-        self.armLeft.run_to_position(30,250,True)
-        self.armRight.run_to_position(30,250,True)
+        self.armLeft.run_to_position(30,260,True)
+        self.armRight.run_to_position(30,260,True)
         self.giveUp = 0
         #stops the function returning whilst still moving
-        while self.armLeft.position() < 250 and self.armRight.position() < 250:
+        while self.armLeft.position() < 260 and self.armRight.position() < 260:
             self.giveUp = self.giveUp + 1
             sys.sleep(0.25)
             if self.giveUp == 6:
@@ -405,7 +408,7 @@ class Robot:
         else:
             return False
 
-    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 2.5): #gets the readings of the ultrasonic, with many overloads
+    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 1.5): #gets the readings of the ultrasonic, with many overloads
 
         self.leftNumbers = [] #variables
         self.rightNumbers = []
@@ -529,7 +532,11 @@ class Robot:
 
         elif option == 3: #ALIGNED DISTANCE CHECK, WILL RETURN EXACT DISTANCE TO OBJECT
 
-            self.readingsResult = self.resolveReadings(2) #grabs readings with same delay but 15 readings
+            self.readingsResult = self.averageReadings(0.1,15) #grabs readings
+            if self.readingsResult.left < self.readingsResult.right: #checks to see which reading is lower
+                self.readingsResult = self.readingsResult.left
+            else:
+                self.readingsResult = self.readingsResult.right
 
             self.distance = math.sqrt((self.readingsResult ** 2) - (5**2)) #perform some cheeky pythagoras
             self.distance = round(self.distance + self.robotRadius) #add on robot radius (means the distance is relative to x,y coord)
