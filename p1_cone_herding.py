@@ -118,7 +118,7 @@ class Robot:
 
     def light(self,colour,blink = False): #control the led
         self.code = self.colours[colour] #finds the colour code in the colour dictionary
-        self.led.named_color(self.code) #set sht ecolour of the led
+        self.led.named_color(self.code) #sets the colour of the led
         if blink == True: #if blink was specified, blink the led
             self.led.blink()
         return None
@@ -175,10 +175,10 @@ class Robot:
         sys.sleep(0.25)
         self.lowerArm()
         sys.sleep(0.25)
-        self.rotateBy(-5) #do the wiggle!
-        self.rotateBy(10)
-        self.rotateBy(-5)
-        self.moveBy(5,True)
+        self.rotateBy(-10) #do the wiggle!
+        self.rotateBy(20)
+        self.rotateBy(-10)
+        self.moveBy(10,True)
         sys.sleep(0.25)
         self.closeClaw()
         sys.sleep(0.25)
@@ -305,17 +305,19 @@ class Robot:
     def liftArm(self): #lift the arm
         self.armLeft.run_to_position(100,0,True)
         self.armRight.run_to_position(100,0,True)
-        while self.armLeft.position() > 0 and self.armRight.position() > 0: #stops the function returning whilst still moving
+        #stops the function returning whilst still moving
+        while self.armLeft.position() > 0 and self.armRight.position() > 0:
             continue
         self.armLeft.hold() #turns the motors off in their new position
         self.armRight.hold()
         return None
 
     def lowerArm(self): #lower the arm
-        self.armLeft.run_to_position(30,240,True)
-        self.armRight.run_to_position(30,240,True)
+        self.armLeft.run_to_position(30,250,True)
+        self.armRight.run_to_position(30,250,True)
         self.giveUp = 0
-        while self.armLeft.position() < 240 and self.armRight.position() < 240: #stops the function returning whilst still moving
+        #stops the function returning whilst still moving
+        while self.armLeft.position() < 250 and self.armRight.position() < 250:
             self.giveUp = self.giveUp + 1
             sys.sleep(0.25)
             if self.giveUp == 6:
