@@ -175,13 +175,15 @@ class Robot:
         sys.sleep(0.25)
         self.lowerArm()
         sys.sleep(0.25)
-        self.moveBy(-10,True)
-        self.moveBy(10,True)
-        self.rotateBy(-10) #do the wiggle!
+
+        self.moveBy(-8,True)
+        self.moveBy(16,True)
+        self.rotateBy(-10)
         self.rotateBy(20)
         self.rotateBy(-10)
-        self.moveBy(10,True)
+        self.moveBy(8,True)
         self.moveBy(-2,True)
+
         sys.sleep(0.25)
         self.closeClaw()
         sys.sleep(0.25)
@@ -410,7 +412,6 @@ class Robot:
             return False
 
     def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 2.5): #gets the readings of the ultrasonic, with many overloads
-
         self.leftNumbers = [] #variables
         self.rightNumbers = []
         self.leftReading = 0
@@ -423,7 +424,6 @@ class Robot:
 
         self.sdl = round(self.standardDeviation(self.leftNumbers) * sd_multiplier) #creates multiplied sd
         self.sdr = round(self.standardDeviation(self.rightNumbers) * sd_multiplier)
-
         self.lmean = self.meanOfValues(self.leftNumbers) #creates mean
         self.rmean = self.meanOfValues(self.rightNumbers)
 
@@ -433,16 +433,13 @@ class Robot:
         for number in self.leftNumbers: #remove values outside the limits
             if number >= (self.lmean - self.sdl) or number <= (self.lmean + self.sdl):
                 self.newLeftNumbers.append(number)
-
         for number in self.rightNumbers: #remove values outside the limits
             if number >= (self.rmean - self.sdr) or number <= (self.rmean + self.sdr):
                 self.newRightNumbers.append(number)
 
         self.leftReading = round(self.meanOfValues(self.newLeftNumbers),2) #creates new averages
         self.rightReading = round(self.meanOfValues(self.newRightNumbers),2)
-
         self.newReadings = Readings(self.leftReading,self.rightReading) #creates a new readings class
-
         return self.newReadings #returns the readings
 
     def alignToCone(self): #will align the robot to a cone infront of it
@@ -516,7 +513,6 @@ class Robot:
     def resolveReadings(self,option,distance = 1): #resolve the location of the cone using the ultrasonic sensors
 
         if option == 1: #BASIC DISTANCE CHECK, QUICK TO SEE IF ANYTHING IN THE WAY
-
             self.readingsResult = self.averageReadings(0,5) #grabs readings with 0 delay in the checks and half the number of readings
             if self.readingsResult.left < 40 or self.readingsResult.right < 40: #checks to see if the readings are below a certain distance
                 return True #returns true
@@ -524,7 +520,6 @@ class Robot:
                 return False #returns false
 
         elif option == 2: #UNALIGNED DISTANCE CHECK, WILL RETURN SHORTEST DISTANCE
-
             self.readingsResult = self.averageReadings() #grabs readings
             if self.readingsResult.left < self.readingsResult.right: #checks to see which reading is lower
                 return self.readingsResult.left
@@ -532,7 +527,6 @@ class Robot:
                 return self.readingsResult.right
 
         elif option == 3: #ALIGNED DISTANCE CHECK, WILL RETURN EXACT DISTANCE TO OBJECT
-
             self.readingsResult = self.resolveReadings(2) #grabs readings
 
             self.distance = math.sqrt((self.readingsResult ** 2) - (5**2)) #perform some cheeky pythagoras
@@ -541,9 +535,7 @@ class Robot:
             return self.distance
 
         elif option == 4:  #WILL TEST TO FIND THE DISTANCE BETWEEN THE TWO READINGS, SEE HOW EQUAL THEY ARE
-
             self.readingsResult = self.averageReadings(0) #grabs readings
-
             if self.readingsResult.left < 30 and self.readingsResult.right < 30:
                 self.deltaU = math.fabs(self.readingsResult.left - self.readingsResult.right) #finds absolute difference
                 if self.deltaU <= distance: #checks to see if difference is within range
@@ -554,7 +546,6 @@ class Robot:
                 return False
 
         else: #IF NO VALID OPTION PICKED
-
             return None
 
     def lookingAtCone(self): #returns whether the robot is looking at a cone using colour sensors
@@ -629,35 +620,31 @@ while True:
         # Motion call ---------------
 
 
-        robot.moveBy(150)
-        aResult = robot.alignToCone()
+        robot.moveBy(150) #move forwards by 150cm (will exit out of this once cone is seen)
+        aResult = robot.alignToCone() #align to the cone and return the 'ultra' distance
         if aResult != False:
-            robot.recordNewCone(aResult)
-        robot.rotateTo(-90)
+            robot.recordNewCone(aResult) #record the new cone
+        robot.rotateTo(-90) #change direction to be left
 
-        robot.moveBy(150)
-        aResult = robot.alignToCone()
+        robot.moveBy(150) #move left by 150cm (will exit out of this once cone is seen)
+        aResult = robot.alignToCone() #align to the cone and return the 'ultra' distance
         if aResult != False:
-            robot.recordNewCone(aResult)
-        robot.rotateTo(-180)
+            robot.recordNewCone(aResult) #record the new cone
+        robot.rotateTo(-180) #chnage direction to be backwards
 
-        robot.moveBy(150)
-        aResult = robot.alignToCone()
+        robot.moveBy(150) #move backwards by 150cm (will exit out of this once cone is seen)
+        aResult = robot.alignToCone() #align to the cone and return the 'ultra' distance
         if aResult != False:
-            robot.recordNewCone(aResult)
-        robot.rotateTo(90)
+            robot.recordNewCone(aResult) #record the new cone
 
-        for cone in range(0,len(robot.allCones)):
+        for cone in range(0,len(robot.allCones)): #for all of the cones in the array
             cone = robot.allCones[0]
-            result = robot.moveToXYA(cone.x,cone.y)
-            robot.alignToCone()
-            robot.collectCone()
-            robot.moveToXYA(0,0)
-            robot.deliverCone()
-            del robot.allCones[0]
-
-        #robot.alignToCone()
-        #robot.collectCone()
+            result = robot.moveToXYA(cone.x,cone.y) #move to the coordinates of the logged cone
+            robot.alignToCone() #align to the cone
+            robot.collectCone() #pick up the cone
+            robot.moveToXYA(0,0) #return to the herd point
+            robot.deliverCone() #drop the cone off
+            del robot.allCones[0] #remove this cone from the array
 
         # ---------------------------
 
