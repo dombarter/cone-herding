@@ -1,5 +1,5 @@
 """__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":214},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
+{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":215},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
 
 # external library imports ------------------
 
@@ -63,8 +63,6 @@ class Robot:
         self.armRight = armR
         self.claw = claw
 
-        #self.armLeft.off() #turns the claw and arm motors off
-        #self.armRight.off()
         self.claw.off()
         self.armLeft.hold()
         self.armRight.hold()
@@ -334,7 +332,7 @@ class Robot:
         return None
 
     def closeClaw(self): #close the claw
-        self.claw.run_until_position(70,125,True)
+        self.claw.run_until_position(70,170,True)
         self.claw.hold()
         return True
 
@@ -586,11 +584,11 @@ UltraRight  = vexiq.DistanceSensor(11, vexiq.UNIT_CM)
 TouchLed    = vexiq.TouchLed(12)
 
 import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 214)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 215)
 #endregion config
 
 # DRIVETRAIN: 212 for foam tiles
-# DRIVETRAIN: 214 for carpet (however ultra is a bit unreliable on carpet)
+# DRIVETRAIN: 215 for carpet (however ultra is a bit unreliable on carpet)
 
 # -------------------------------------------
 
@@ -620,7 +618,7 @@ while True:
         # Motion call ---------------
 
 
-        robot.moveBy(150) #move forwards by 150cm (will exit out of this once cone is seen)
+        """robot.moveBy(150) #move forwards by 150cm (will exit out of this once cone is seen)
         aResult = robot.alignToCone() #align to the cone and return the 'ultra' distance
         if aResult != False:
             robot.recordNewCone(aResult) #record the new cone
@@ -644,7 +642,10 @@ while True:
             robot.collectCone() #pick up the cone
             robot.moveToXYA(0,0) #return to the herd point
             robot.deliverCone() #drop the cone off
-            del robot.allCones[0] #remove this cone from the array
+            del robot.allCones[0] #remove this cone from the array"""
+
+        robot.alignToCone()
+        robot.collectCone()
 
         # ---------------------------
 
