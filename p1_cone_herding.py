@@ -1,5 +1,5 @@
 """__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":215},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
+{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":212},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
 
 # external library imports ------------------
 
@@ -32,6 +32,14 @@ class Readings:
     def __init__(self,left,right):
         self.left = left
         self.right = right
+
+# Herd point class
+class Herdpoint:
+    def __init__(self,x,y,radius = 20):
+        self.x = x
+        self.y = y
+        self.radius = radius
+
 
 # Robot class
 class Robot:
@@ -69,6 +77,8 @@ class Robot:
 
         self.colorLeft.set_proximity_threshold(0) # sets the accuracy and distance on the colour sensors
         self.colorRight.set_proximity_threshold(0)
+
+        self.herdpoint = Herdpoint(0,0) # sets the location of the herdpoint
 
 
     # ---------------------------------------
@@ -121,8 +131,22 @@ class Robot:
             self.led.blink()
         return None
 
-    def returnToHerdPoint(self,herdpoint): #return the robot to the herd point
-        return None
+    def returnToHerdPoint(self,deliverCone = False): #return the robot to the herd point
+        if self.herdpoint == None: #herdpoint doesn't exist
+            return False
+        else:
+            self.hx = self.herdpoint.x
+            self.hy = self.herdpoint.y
+            self.moveToXYA(self.hx,self.hy) #move the robot to the herdpoint
+
+            self.intialDistance = self.resolveReadings(2) # grab the sighting distance
+            self.deltaD = round(self.intialDistance - (35 - self.robotRadius)) #calulate change in displacement
+            self.moveBy(self.deltaD,True) #move the robot
+
+            if deliverCone == True: #deliver the cone
+                self.deliverCone()
+            
+            return True
 
     def moveToXYA(self,x,y,angle = None,ignoreCone = False): #move the robot to an x coord, y coord and angle of rotation
         self.currentX = self.x #grabs current x coordinate
@@ -584,11 +608,11 @@ UltraRight  = vexiq.DistanceSensor(11, vexiq.UNIT_CM)
 TouchLed    = vexiq.TouchLed(12)
 
 import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 215)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 #endregion config
 
-# DRIVETRAIN: 212 for foam tiles
-# DRIVETRAIN: 215 for carpet (however ultra is a bit unreliable on carpet)
+# DRIVETRAIN: 212 for foam tiles and table
+# DRIVETRAIN: 215 for carpet
 
 # -------------------------------------------
 
@@ -617,8 +641,8 @@ while True:
 
         # Motion call ---------------
 
-
-        """robot.moveBy(150) #move forwards by 150cm (will exit out of this once cone is seen)
+        """
+        robot.moveBy(150) #move forwards by 150cm (will exit out of this once cone is seen)
         aResult = robot.alignToCone() #align to the cone and return the 'ultra' distance
         if aResult != False:
             robot.recordNewCone(aResult) #record the new cone
@@ -642,10 +666,16 @@ while True:
             robot.collectCone() #pick up the cone
             robot.moveToXYA(0,0) #return to the herd point
             robot.deliverCone() #drop the cone off
-            del robot.allCones[0] #remove this cone from the array"""
+            del robot.allCones[0] #remove this cone from the array
+        """
 
-        robot.alignToCone()
-        robot.collectCone()
+        numberOfCones = 3
+        for x in range(0,numberOfCones):
+            robot.rotateTo(90)
+            robot.moveBy(200)
+            robot.alignToCone()
+            robot.collectCone()
+            robot.returnToHerdPoint(True)
 
         # ---------------------------
 
