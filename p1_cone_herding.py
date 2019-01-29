@@ -631,8 +631,6 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 while True:
     robot.light("blue")
     vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1) #standard screen output
-    vexiq.lcd_write("Looking At Cone: " + str(robot.lookingAtCone()),2)
-
 
     if robot.isActivated():
 
@@ -669,6 +667,7 @@ while True:
             del robot.allCones[0] #remove this cone from the array
         """
 
+        # for collecting cones in a straight line
         numberOfCones = 3
         for x in range(0,numberOfCones):
             robot.rotateTo(90)
