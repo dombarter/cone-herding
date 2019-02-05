@@ -40,25 +40,28 @@ def traversePath(self,path,robot):
             if robot.x != path.xLine:
                 result = robot.movetoXYA(path.xLine,robot.y) #move back to the path
                 #deal with cone somehow
-            else:
+            
+            #move the robot to the goalY
+            result = robot.movetoXYA(path.xLine,path.goalY) #move to the goalY
 
-                #move the robot to the goalY
-                result = robot.movetoXYA(path.xLine,path.goalY) #move to the goalY
+            #the move to xya has failed
+            if result == False:
+                if robot.y < path.goalY + coneWallDistance and robot.y > path.goalY - coneWallDistance: #near enough to the wall
+                    break
+                else: #it is a cone (simple traverse knows where walls are)
+                    result = robot.alignToCone()
+                    if robot.carryingCone == True:
 
-                #the move to xya has failed
-                if result == False:
-                    if robot.y < path.goalY + coneWallDistance and robot.y > path.goalY - coneWallDistance: #near enough to the wall
-                        break
-                    else: #it is a cone (simple traverse knows where walls are)
-                        result = robot.alignToCone()
-                        if robot.carryingCone == True:
-                            path.recordCurrentLocation() #sets the xLastPosition and yLastPosiiton variables
-                            robot.returnToHerdPoint() #take cone back
-                            robot.carryingCone = False #set carrying cone to true 
-                            robot.returnToPathPoint() #come back to path point
-                        else:
-                            robot.collectCone() #pickup the cone
-                            robot.carryingCone = True #set carrying cone to true                        
+                        path.xLastPosition = robot.x #sets the xLastPosition and yLastPosiiton variables
+                        path.yLastPosiiton = robot.y
+
+                        robot.returnToHerdPoint() #take cone back
+                        robot.carryingCone = False #set carrying cone to true 
+                        robot.returnToPathPoint() #come back to path point
+
+                    else:
+                        robot.collectCone() #pickup the cone
+                        robot.carryingCone = True #set carrying cone to true                        
 
         path.completed = True
         return True # path was completed
