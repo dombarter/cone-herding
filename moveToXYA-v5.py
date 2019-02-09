@@ -19,34 +19,17 @@ import math
 # Robot Class -----------------------------------------------------------------
 
 class Robot:
-    # public properties -------------------------------------------------------
 
     x = 0 # x coordinate
     y = 0 # y coordinate
     angle = 0 # current angle of the robot
 
-    # object instantiation ----------------------------------------------------
-
+    # object instantiation
     def __init__(self,dt,turn,speed):
 
         self.drivetrain = dt #sets the drivetrain variable
         self.turnSpeed = turn
         self.movementSpeed = speed
-
-    # basic mathematical functions --------------------------------------------
-
-    def intify(self,number): #used to convert from float to int
-        self.num = round(number)
-        self.iterate = 0
-        if number > 0: #for positive numbers
-            while self.iterate != self.num:
-                self.iterate+=1
-        else: #for negative numbers
-            while self.iterate != self.num:
-                self.iterate-=1
-        return self.iterate #returns intified number
-
-    # robot specific functions ------------------------------------------------
 
     # move the robot to an x coord, y coord and angle of rotation
     def moveToXYA(self,x,y,angle = None): 
