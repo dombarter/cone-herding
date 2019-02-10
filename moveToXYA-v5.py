@@ -187,10 +187,10 @@ class XYCoordinates:
 
 # Robot Setup -----------------------------------------------------------------
 
-wheelTravel = 300 # circumference of the wheel
-trackWidth = 300 # width of the chassis
-turnSpeed = 25 # how fast the robot will turn
-movementSpeed = 30 # how fast the robot will go forwards and back
+wheelTravel = 300 # circumference of the wheel (mm)
+trackWidth = 300 # width of the chassis (mm)
+turnSpeed = 25 # how fast the robot will turn (%)
+movementSpeed = 30 # how fast the robot will go forwards and back (%)
 
 brain      = vex.Brain()
 controller = vex.Controller(vex.ControllerType.PRIMARY)
