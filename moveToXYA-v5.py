@@ -68,12 +68,14 @@ class Robot:
         self.motion = self.moveBy(self.distance) #move by the newly found distance, and specifiying the ignoreCone parmater with a variable
 
         if self.motion == False: #if the robot was unable to complete its journey
+            self.drivetrain.stop(vex.BrakeType.HOLD)
             return False #return that journey was unsuccessful
         else: #otherwsie,
             self.x = x #set new x coordinate
             self.y = y #set new y coordinate
             if angle != None: # if an end rotation angle was specified
                 self.rotateTo(angle) #rotate to the specified angle
+            self.drivetrain.stop(vex.BrakeType.HOLD)
             return True #return that journey was successful
 
     # move the robot forwards by a certain distance
@@ -82,13 +84,14 @@ class Robot:
         self.currentAngle = self.angle #gets current gyro reading
 
         if distance >= 0:
-             dt.start_drive_for(vex.DirectionType.FWD,distance,vex.DistanceUnits.CM,self.movementSpeed,vex.VelocityUnits.PCT)
+             dt.drive_for(vex.DirectionType.FWD,distance,vex.DistanceUnits.CM,self.movementSpeed,vex.VelocityUnits.PCT)
         else:
-            dt.start_drive_for(vex.DirectionType.REV,distance*-1,vex.DistanceUnits.CM,self.movementSpeed,vex.VelocityUnits.PCT)
+            dt.drive_for(vex.DirectionType.REV,distance*-1,vex.DistanceUnits.CM,self.movementSpeed,vex.VelocityUnits.PCT)
 
         self.resolveResult = self.resolveXY(self.x,self.y,distance,self.currentAngle)
         self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
+        self.drivetrain.stop(vex.BrakeType.HOLD)
         return True #robot has been able to reach destination
 
     # rotate the robot to a certain angle
@@ -118,12 +121,13 @@ class Robot:
                 self.deltaR = (self.deltaR + 360)
 
             if self.deltaR >= 0: #turn the robot
-                self.drivetrain.start_turn_for(vex.TurnType.RIGHT,self.deltaR,vex.RotationUnits.DEG,self.turnSpeed,vex.VelocityUnits.PCT)
+                self.drivetrain.turn_for(vex.TurnType.RIGHT,self.deltaR,vex.RotationUnits.DEG,self.turnSpeed,vex.VelocityUnits.PCT)
             else:
-                self.drivetrain.start_turn_for(vex.TurnType.LEFT,self.deltaR*-1,vex.RotationUnits.DEG,self.turnSpeed,vex.VelocityUnits.PCT)
+                self.drivetrain.turn_for(vex.TurnType.LEFT,self.deltaR*-1,vex.RotationUnits.DEG,self.turnSpeed,vex.VelocityUnits.PCT)
 
             self.angle = self.goalAngle #set new angle
 
+            self.drivetrain.stop(vex.BrakeType.HOLD)
             return True
 
     # function to update distaplacement of the robot by calculating new coordinates
@@ -187,8 +191,8 @@ class XYCoordinates:
 
 # Robot Setup -----------------------------------------------------------------
 
-wheelTravel = 300 # circumference of the wheel (mm)
-trackWidth = 300 # width of the chassis (mm)
+wheelTravel = 314 # circumference of the wheel (mm)
+trackWidth = 375 # width of the chassis (mm)
 turnSpeed = 25 # how fast the robot will turn (%)
 movementSpeed = 30 # how fast the robot will go forwards and back (%)
 
