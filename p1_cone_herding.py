@@ -135,12 +135,12 @@ class Robot:
         if self.herdpoint == None: #herdpoint doesn't exist
             return False
         else:
-            self.hx = self.herdpoint.x
+            self.hx = self.herdpoint.x #grab the herdpoint coordinates
             self.hy = self.herdpoint.y
             self.moveToXYA(self.hx,self.hy) #move the robot to the herdpoint
 
             self.intialDistance = self.resolveReadings(2) # grab the sighting distance
-            self.deltaD = round(self.intialDistance - (35 - self.robotRadius)) #calulate change in displacement
+            self.deltaD = round(self.intialDistance - (35 - self.robotRadius)) #calculate change in displacement
             self.moveBy(self.deltaD,True) #move the robot
 
             if deliverCone == True: #deliver the cone
