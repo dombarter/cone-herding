@@ -84,9 +84,9 @@ class Robot:
         if distance >= 0:
              dt.start_drive_for(vex.DirectionType.FWD,distance,vex.DistanceUnits.CM,self.movementSpeed,vex.VelocityUnits.PCT)
         else:
-            dt.start_drive_for(vex.DirectionType.REV,distance,vex.DistanceUnits.CM,self.movementSpeed,vex.VelocityUnits.PCT)
+            dt.start_drive_for(vex.DirectionType.REV,distance*-1,vex.DistanceUnits.CM,self.movementSpeed,vex.VelocityUnits.PCT)
 
-        self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
+        self.resolveResult = self.resolveXY(self.x,self.y,distance,self.currentAngle)
         self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
         return True #robot has been able to reach destination
@@ -120,7 +120,7 @@ class Robot:
             if self.deltaR >= 0: #turn the robot
                 self.drivetrain.start_turn_for(vex.TurnType.RIGHT,self.deltaR,vex.RotationUnits.DEG,self.turnSpeed,vex.VelocityUnits.PCT)
             else:
-                self.drivetrain.start_turn_for(vex.TurnType.LEFT,self.deltaR,vex.RotationUnits.DEG,self.turnSpeed,vex.VelocityUnits.PCT)
+                self.drivetrain.start_turn_for(vex.TurnType.LEFT,self.deltaR*-1,vex.RotationUnits.DEG,self.turnSpeed,vex.VelocityUnits.PCT)
 
             self.angle = self.goalAngle #set new angle
 
@@ -194,8 +194,8 @@ movementSpeed = 30 # how fast the robot will go forwards and back (%)
 
 brain      = vex.Brain()
 controller = vex.Controller(vex.ControllerType.PRIMARY)
-leftMotor  = vex.Motor(vex.Ports.PORT1, vex.GearSetting.RATIO18_1, False) #example usage
-rightMotor = vex.Motor(vex.Ports.PORT2, vex.GearSetting.RATIO18_1, True) #example usage
+leftMotor  = vex.Motor(vex.Ports.PORT14, vex.GearSetting.RATIO18_1, False) #example usage
+rightMotor = vex.Motor(vex.Ports.PORT15, vex.GearSetting.RATIO18_1, True) #example usage
 dt         = vex.Drivetrain(leftMotor, rightMotor, wheelTravel, trackWidth, vex.DistanceUnits.MM)
 
 robot = Robot(dt,turnSpeed,movementSpeed) #create the robot class
