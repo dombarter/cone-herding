@@ -51,6 +51,8 @@ class Robot:
     angle = 0 # current angle of the robot
     robotRadius = 7 # distacne between center of displacement and ultrasonic sensors
     allCones = [] #holds all the cones
+    carryingCone = False # shows whether the robot is carrying a cone or not
+    robotWidth = 20 #needs to be measured
 
     #array storing all the colour codes for the led
     colours = {"off":0,"red":1,"red_orange":2,"orange":3,"yellow_orange":4,"yellow":5,"yellow_green":6,"green":7,"blue_green":8,"blue":9,"blue_violet":10,"violet":11,"red_violet":12,"white":13}
