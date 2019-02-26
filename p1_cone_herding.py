@@ -1,6 +1,3 @@
-"""__CONFIG__
-{"version":20,"widgetInfos":[{"hwid":"1","name":"LeftDrive","typeName":"motor","extraConfig":null,"bufferIndex":0},{"hwid":"2","name":"RightDrive","typeName":"motor_rp","extraConfig":null,"bufferIndex":1},{"hwid":"3","name":"ArmLeft","typeName":"motor","extraConfig":null,"bufferIndex":2},{"hwid":"4","name":"Claw","typeName":"motor","extraConfig":null,"bufferIndex":3},{"hwid":"5","name":"ArmRight","typeName":"motor_rp","extraConfig":null,"bufferIndex":4},{"hwid":"8","name":"LeftColour","typeName":"color_hue","extraConfig":null,"bufferIndex":5},{"hwid":"9","name":"RightColour","typeName":"color_hue","extraConfig":null,"bufferIndex":6},{"hwid":"10","name":"UltraLeft","typeName":"distance_cm","extraConfig":null,"bufferIndex":7},{"hwid":"11","name":"UltraRight","typeName":"distance_cm","extraConfig":null,"bufferIndex":8},{"hwid":"12","name":"TouchLed","typeName":"touch_led","extraConfig":null,"bufferIndex":9},{"hwid":"drivetrain","name":"dt","typeName":"drivetrain","extraConfig":{"leftMotorHwId":"1","rightMotorHwId":"2","wheelTravel":200,"trackWidth":212},"bufferIndex":10},{"hwid":"lcd","name":"lcd","typeName":"lcd","extraConfig":null,"bufferIndex":11},{"hwid":"sound","name":"sound","typeName":"sound","extraConfig":null,"bufferIndex":12},{"hwid":"btn_chk","name":"button_check","typeName":"face_button","extraConfig":null,"bufferIndex":13},{"hwid":"btn_up","name":"button_up","typeName":"face_button","extraConfig":null,"bufferIndex":14},{"hwid":"btn_down","name":"button_down","typeName":"face_button","extraConfig":null,"bufferIndex":15}]}"""
-
 # external library imports ------------------
 
 import sys
@@ -40,14 +37,13 @@ class Herdpoint:
         self.y = y
         self.radius = radius
 
-# Walls lass
+# Walls class
 class Walls:
-    def __init__(self, top, bottom, left, right): #specify all four walls
-        self.top = top
-        self.bottom = bottom
-        self.left = left
-        self.right = right
-        return True
+    def __init__(self, Top, Bottom, Left, Right): #specify all four walls
+        self.top = Top
+        self.bottom = Bottom
+        self.left = Left
+        self.right = Right
 
 # Path class
 class Path:
@@ -638,7 +634,7 @@ UltraRight  = vexiq.DistanceSensor(11, vexiq.UNIT_CM)
 TouchLed    = vexiq.TouchLed(12)
 
 import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 215)
 #endregion config
 
 # DRIVETRAIN: 212 for foam tiles and table
@@ -649,32 +645,83 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 # Pre-program object creation ---------------
 
 robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed) #create robot class
-allPath = [] #stores all paths in use
+allPaths = [] #stores all paths in use
 coneWallDistance = 15 #the distance where they have reached the wall and cone cannot be in the way
-walls = Walls(100,-100,-100,100) #create our walls of known dimensions (t,b,l,r)
+zoneWalls = Walls(100,-100,-50,50)
 allConesHerded = False
 
 # -------------------------------------------
 
 # Search Functions --------------------------
 
-def traversePath(path):
-    pass
+def traversePathSimple(path):
+
+    while robot.y != path.goalY: #while still not at the goalY (determines path completion)
+
+            # realign to the path -----------------------------------------------------------------
+
+            while robot.x != path.xLine: #keep aligning to the path line
+
+                if robot.x != path.xLine:
+                    result = robot.moveToXYA(path.xLine,robot.y) #move back to the path
+                    
+                    if result == False:
+                        result = robot.alignToCone()
+                        if robot.carryingCone == True:
+
+                            path.xLastPosition = robot.x #sets the xLastPosition and yLastPosiiton variables
+                            path.yLastPosiiton = robot.y
+
+                            robot.returnToHerdPoint() #take cone back
+                            robot.carryingCone = False #set carrying cone to true 
+                            robot.returnToPathPoint() #come back to path point
+
+                        else:
+                            robot.collectCone() #pickup the cone
+                            robot.carryingCone = True #set carrying cone to true
+            
+            #move the robot to the goalY ----------------------------------------------------------
+
+            result = robot.moveToXYA(path.xLine,path.goalY) #move to the goalY
+
+            #the move to xya has failed -----------------------------------------------------------
+            if result == False:
+                if robot.y < path.goalY + coneWallDistance and robot.y > path.goalY - coneWallDistance: #near enough to the wall
+                    break #complete the path
+                else: #it is a cone (simple traverse knows where walls are)
+                    result = robot.alignToCone() #align to the cone
+                    if robot.carryingCone == True:
+
+                        path.xLastPosition = robot.x #sets the xLastPosition and yLastPosiiton variables
+                        path.yLastPosiiton = robot.y
+
+                        robot.returnToHerdPoint(True) #take cone back
+                        robot.carryingCone = False #set carrying cone to true 
+                        robot.returnToPathPoint() #come back to path point
+
+                    else:
+                        robot.collectCone() #pickup the cone
+                        robot.carryingCone = True #set carrying cone to true                        
+
+        # set path as completed -------------------------------------------------------------------
+
+    path.completed = True
+    return(path) # path was completed
 
 def createNewPath():
     pass
 
 def initialUpDown():
-    tempPath1 = Path("up",0,walls.top,walls.bottom) #traverse upwards
-    traversePath(tempPath1)
-    tempPath2 = Path("down",0,walls.top,walls.bottom) #traverse downwards
-    traversePath(tempPath2)
 
-    initialPath = Path("down",0,walls.top,walls.bottom) #creates the intial path and sends it to the array
+    tempPath1 = Path("up",0,zoneWalls.top,zoneWalls.bottom) #traverse upwards
+    traversePathSimple(tempPath1)
+
+    tempPath2 = Path("down",0,zoneWalls.top,zoneWalls.bottom) #traverse downwards
+    traversePathSimple(tempPath2)
+
+    initialPath = Path("down",0,zoneWalls.top,zoneWalls.bottom) #creates the intial path and sends it to the array
     initialPath.completed = True #set path to completed                         
-    allPaths.append(intialPath) #append path to array
-
-    return True
+    allPaths.append(initialPath) #append path to array
 
 def herdAllCones():
     initialUpDown()
