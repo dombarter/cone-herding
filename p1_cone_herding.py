@@ -40,6 +40,34 @@ class Herdpoint:
         self.y = y
         self.radius = radius
 
+# Walls lass
+class Walls:
+    def __init__(self, top, bottom, left, right): #specify all four walls
+        self.top = top
+        self.bottom = bottom
+        self.left = left
+        self.right = right
+        return True
+
+# Path class
+class Path:
+    def __init__(self, direction, x_line, y_upper, y_lower):
+
+        self.direction = direction #sets all the variables needed
+        self.xLine = x_line
+        self.yUpper = y_upper
+        self.yLower = y_lower
+        self.completed = False
+        self.xlastVisited = 0
+        self.ylastVisited = 0
+        self.simpleTraverse = False
+
+        if self.direction == "up" and self.yUpper != None: #sets the goalY if they are able to be calculated
+            self.simpleTraverse = True
+            self.goalY = self.yUpper
+        elif self.direction == "down" and self.yLower != None:
+            self.simpleTraverse = True
+            self.goalY = self.yLower
 
 # Robot class
 class Robot:
@@ -621,13 +649,35 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 # Pre-program object creation ---------------
 
 robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed) #create robot class
+allPath = [] #stores all paths in use
+coneWallDistance = 15 #the distance where they have reached the wall and cone cannot be in the way
+walls = Walls(100,-100,-100,100) #create our walls of known dimensions (t,b,l,r)
+allConesHerded = False
 
 # -------------------------------------------
 
 # Search Functions --------------------------
 
+def traversePath(path):
+    pass
+
+def createNewPath():
+    pass
+
+def initialUpDown():
+    tempPath1 = Path("up",0,walls.top,walls.bottom) #traverse upwards
+    traversePath(tempPath1)
+    tempPath2 = Path("down",0,walls.top,walls.bottom) #traverse downwards
+    traversePath(tempPath2)
+
+    initialPath = Path("down",0,walls.top,walls.bottom) #creates the intial path and sends it to the array
+    initialPath.completed = True #set path to completed                         
+    allPaths.append(intialPath) #append path to array
+
+    return True
+
 def herdAllCones():
-    robot.moveBy(50)
+    initialUpDown()
 
 # -------------------------------------------
 

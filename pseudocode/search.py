@@ -137,8 +137,6 @@ def createNewPath():
             #no preffered path
             #at this point we should be returning none or something like that
     
-
-
 #herd all cones function (basically the main function)
 def herdAllCones():
 
