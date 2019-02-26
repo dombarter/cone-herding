@@ -624,7 +624,10 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 
 # -------------------------------------------
 
-# Test Functions ----------------------------
+# Search Functions --------------------------
+
+def herdAllCones():
+    robot.moveBy(50)
 
 # -------------------------------------------
 
@@ -641,42 +644,7 @@ while True:
 
         # Motion call ---------------
 
-        """
-        robot.moveBy(150) #move forwards by 150cm (will exit out of this once cone is seen)
-        aResult = robot.alignToCone() #align to the cone and return the 'ultra' distance
-        if aResult != False:
-            robot.recordNewCone(aResult) #record the new cone
-        robot.rotateTo(-90) #change direction to be left
-
-        robot.moveBy(150) #move left by 150cm (will exit out of this once cone is seen)
-        aResult = robot.alignToCone() #align to the cone and return the 'ultra' distance
-        if aResult != False:
-            robot.recordNewCone(aResult) #record the new cone
-        robot.rotateTo(-180) #chnage direction to be backwards
-
-        robot.moveBy(150) #move backwards by 150cm (will exit out of this once cone is seen)
-        aResult = robot.alignToCone() #align to the cone and return the 'ultra' distance
-        if aResult != False:
-            robot.recordNewCone(aResult) #record the new cone
-
-        for cone in range(0,len(robot.allCones)): #for all of the cones in the array
-            cone = robot.allCones[0]
-            result = robot.moveToXYA(cone.x,cone.y) #move to the coordinates of the logged cone
-            robot.alignToCone() #align to the cone
-            robot.collectCone() #pick up the cone
-            robot.moveToXYA(0,0) #return to the herd point
-            robot.deliverCone() #drop the cone off
-            del robot.allCones[0] #remove this cone from the array
-        """
-
-        # for collecting cones in a straight line
-        numberOfCones = 3
-        for x in range(0,numberOfCones):
-            robot.rotateTo(90)
-            robot.moveBy(200)
-            robot.alignToCone()
-            robot.collectCone()
-            robot.returnToHerdPoint(True)
+        herdAllCones()
 
         # ---------------------------
 
