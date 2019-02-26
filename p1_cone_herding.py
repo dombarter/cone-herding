@@ -166,8 +166,10 @@ class Robot:
             self.moveToXYA(self.hx,self.hy) #move the robot to the herdpoint
 
             self.intialDistance = self.resolveReadings(2) # grab the sighting distance
-            self.deltaD = round(self.intialDistance - (35 - self.robotRadius)) #calculate change in displacement
-            self.moveBy(self.deltaD,True) #move the robot
+
+            if self.intialDistance < 40: #only if there is another cone there 
+                self.deltaD = round(self.intialDistance - (35 - self.robotRadius)) #calculate change in displacement
+                self.moveBy(self.deltaD,True) #move the robot
 
             if deliverCone == True: #deliver the cone
                 self.deliverCone()
