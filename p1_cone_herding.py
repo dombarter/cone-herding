@@ -240,8 +240,6 @@ class Robot:
         self.moveBy(-2,True)
 
         self.closeClaw()
-        self.openClaw()
-        self.closeClaw()
         self.liftArm()
         self.light("orange",True)
 
@@ -253,7 +251,7 @@ class Robot:
         sys.sleep(0.25)
         self.liftArm()
         sys.sleep(0.25)
-        self.openClaw() # second opening of claw as often claw sticks
+        self.closeClaw()
         self.light("orange",True)
         return None
 
@@ -391,7 +389,8 @@ class Robot:
         return True
 
     def openClaw(self): #open the claw
-        self.claw.run_until_position(50,-70,True)
+        self.claw.run(-100)
+        sys.sleep(1)
         self.claw.hold()
         return True
 
@@ -753,9 +752,7 @@ while True:
 
         # Motion call ---------------
 
-        #herdAllCones()
-        robot.alignToCone()
-        robot.collectCone()
+        herdAllCones()
 
         # ---------------------------
 
