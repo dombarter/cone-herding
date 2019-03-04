@@ -387,13 +387,12 @@ class Robot:
         return None
 
     def closeClaw(self): #close the claw
-        self.claw.run_until_position(70,170,True)
-        self.claw.hold()
+        self.claw.off()
         return True
 
     def openClaw(self): #open the claw
-        self.claw.run_until_position(70,0,True)
-        self.claw.off()
+        self.claw.run_until_position(50,-70,True)
+        self.claw.hold()
         return True
 
     def resolveXY(self,xCoord,yCoord,distance,rotation): #function to update distaplacement of the robot by calculating new coordinates
@@ -754,9 +753,9 @@ while True:
 
         # Motion call ---------------
 
-        herdAllCones()
-        #robot.alignToCone()
-        #robot.collectCone()
+        #herdAllCones()
+        robot.alignToCone()
+        robot.collectCone()
 
         # ---------------------------
 
