@@ -72,7 +72,7 @@ class Robot:
 
     x = 0 # x coordinate
     y = 0 # y coordinate
-    angle = 0 # current angle of the robot
+    #angle = 0 # current angle of the robot
     robotRadius = 7 # distacne between center of displacement and ultrasonic sensors
     allCones = [] #holds all the cones
     carryingCone = False # shows whether the robot is carrying a cone or not
@@ -85,7 +85,7 @@ class Robot:
 
     # object instantiation ------------------
 
-    def __init__(self,dt,armL,armR,claw,colorLeft,colorRight,distanceLeft,distanceRight,led): #intiiation function
+    def __init__(self,dt,armL,armR,claw,colorLeft,colorRight,distanceLeft,distanceRight,led,gyro): #intiiation function
 
         self.drivetrain = dt #sets hardware variables
         self.colorRight = colorRight
@@ -96,10 +96,15 @@ class Robot:
         self.armLeft = armL
         self.armRight = armR
         self.claw = claw
+        self.gyro = gyro
+        
 
         self.claw.off()
         self.armLeft.hold()
         self.armRight.hold()
+
+        self.colorLeft.led_on()
+        self.colorRight.led_on()
 
         self.colorLeft.set_proximity_threshold(0) # sets the accuracy and distance on the colour sensors
         self.colorRight.set_proximity_threshold(0)
@@ -157,29 +162,17 @@ class Robot:
             self.led.blink()
         return None
 
-    def returnToHerdPoint(self,deliverCone = False): #return the robot to the herd point
-        if self.herdpoint == None: #herdpoint doesn't exist
-            return False
-        else:
-            self.hx = self.herdpoint.x #grab the herdpoint coordinates
-            self.hy = self.herdpoint.y
-            self.moveToXYA(self.hx,self.hy) #move the robot to the herdpoint
-
-            self.intialDistance = self.resolveReadings(2) # grab the sighting distance
-
-            if self.intialDistance < 40: #only if there is another cone there 
-                self.deltaD = round(self.intialDistance - (35 - self.robotRadius)) #calculate change in displacement
-                self.moveBy(self.deltaD,True) #move the robot
-
-            if deliverCone == True: #deliver the cone
-                self.deliverCone()
-            
-            return True
+    def returnToHerdPoint(self,deliverCone = True): #return the robot to the herd point
+        self.hx = self.herdpoint.x #grab the herdpoint coordinates
+        self.hy = self.herdpoint.y
+        self.moveToXYA(self.hx,self.hy,None,True) #move the robot to the herdpoint
+        if deliverCone == True:
+            self.deliverCone()
+        return True
 
     def returnToPathPoint(self,path): #return the robot to a point on a path
-        vexiq.lcd_write("Returning To Path")
         self.moveToXYA(path.xlastVisited,path.ylastVisited,None,True)
-        self.debug()
+        return True
 
     def moveToXYA(self,x,y,angle = None,ignoreCone = False): #move the robot to an x coord, y coord and angle of rotation
         self.currentX = self.x #grabs current x coordinate
@@ -240,6 +233,7 @@ class Robot:
         self.moveBy(-2,True)
 
         self.closeClaw()
+        sys.sleep(0.4)
         self.liftArm()
         self.light("orange",True)
 
@@ -257,7 +251,7 @@ class Robot:
 
     def moveBy(self,distance,ignoreCone = False): #move the robot forwards by a certain distance
 
-        self.currentAngle = self.angle #gets current gyro reading
+        self.currentAngle = self.angle_() #gets current gyro reading
         self.cm = self.intify(distance) #gets the distance to travel in cm (0 dp)
         self.numberOfIterations = self.intify(math.floor(self.cm / 30))
         self.remainder = self.intify(self.cm % 30)
@@ -309,7 +303,6 @@ class Robot:
     def rotateBy(self,degrees): #turn the robot, positive for right, negative for left
 
         self.deltaA = round(degrees)
-        self.drivetrain.turn_until(22,-1*self.deltaA) #turn the robot
 
         if self.deltaA > 0: #remove any excess 360 rotations
             while self.deltaA >= 360:
@@ -318,21 +311,23 @@ class Robot:
             while self.deltaA <= -360:
                 self.deltaA = self.deltaA + 360
 
-        self.newAngle = self.angle + self.deltaA #calculate final angle with v = u + d calculation
+        self.newAngle = self.angle_() + self.deltaA #calculate final angle with v = u + d calculation
 
         if self.newAngle > 180: #trim difference at 180/-180 border
             self.newAngle = self.newAngle - 360
         if self.newAngle < -180:
             self.newAngle = self.newAngle + 360
 
-        self.angle = round(self.newAngle) #set new angle
+        self.rotateTo(self.newAngle)
 
-    def rotateTo(self,degrees): #rotate the robot to a certain angle
+        return True
+
+    def rotateToOld(self,degrees): #rotate the robot to a certain angle
 
         if degrees < -180 or degrees > 180:
             return False #invalid goal angle
         else:
-            self.currentAngle = self.angle #grabs the current angle of the robot
+            self.currentAngle = self.angle_() #grabs the current angle of the robot
             self.goalAngle = round(degrees) #sets the goal degrees to a new variable
 
             if self.currentAngle < 0 and self.goalAngle == 180: #couteract 180/-180 clash
@@ -354,9 +349,79 @@ class Robot:
 
             self.drivetrain.turn_until(22,-1*self.deltaR) #turn the robot
 
-            self.angle = self.goalAngle #set new angle
+            #self.angle() = self.goalAngle #set new angle
 
             return True
+
+    def rotateTo(self,degrees):
+        
+        # intial deltaR -------------------------
+
+        if degrees < -180 or degrees > 180:
+            return False #invalid goal angle
+        else:
+            self.currentAngle = self.angle_() #grabs the current angle of the robot
+            self.goalAngle = round(degrees) #sets the goal degrees to a new variable
+
+            if self.currentAngle < 0 and self.goalAngle == 180: #couteract 180/-180 clash
+                self.goalAngle = -180
+            elif self.currentAngle > 0 and self.goalAngle == -180:
+                self.goalAngle = 180
+            elif self.currentAngle == 180 and self.goalAngle < 0:
+                self.currentAngle = -180
+            elif self.currentAngle == -180 and self.goalAngle > 0:
+                self.currentAngle = 180
+
+            self.deltaR = self.goalAngle - self.currentAngle #calculates how far the robot needs to rotate
+
+            #changes the deltaR value to the desired value (avoids 180/-180 cutoff)
+            if self.deltaR > 180:
+                self.deltaR = (self.deltaR - 360)
+            elif self.deltaR < -180:
+                self.deltaR = (self.deltaR + 360)
+
+            self.deltaR = round(self.deltaR) # intial change in rotation
+
+        # turn the robot ------------------------
+
+        while self.deltaR != 0:
+
+            self.power = (self.deltaR / 360) * 100 #creates the power in terms of deltaR
+
+            #adds minimum power value and multiplies by -1 to conform to api ruling
+            if self.power > 0:
+                self.power = (self.power + 10) * -1 # 15 is a minimum power value
+            elif self.power < 0:
+                self.power = (self.power - 10) * -1
+
+            self.drivetrain.turn(self.power) #turns the robot
+        
+            # calculate new delta r -------------
+
+            self.currentAngle = self.angle_() #grabs the current angle of the robot
+            self.goalAngle = round(degrees) #sets the goal degrees to a new variable
+
+            if self.currentAngle < 0 and self.goalAngle == 180: #couteract 180/-180 clash
+                self.goalAngle = -180
+            elif self.currentAngle > 0 and self.goalAngle == -180:
+                self.goalAngle = 180
+            elif self.currentAngle == 180 and self.goalAngle < 0:
+                self.currentAngle = -180
+            elif self.currentAngle == -180 and self.goalAngle > 0:
+                self.currentAngle = 180
+
+            self.deltaR = self.goalAngle - self.currentAngle #calculates how far the robot needs to rotate
+
+            #changes the deltaR value to the desired value (avoids 180/-180 cutoff)
+            if self.deltaR > 180:
+                self.deltaR = (self.deltaR - 360)
+            elif self.deltaR < -180:
+                self.deltaR = (self.deltaR + 360)
+
+            self.deltaR = round(self.deltaR) # intial change in rotation
+
+        self.drivetrain.hold()
+        return True
 
     def liftArm(self): #lift the arm
         self.armLeft.run_to_position(100,0,True)
@@ -444,7 +509,7 @@ class Robot:
         return self.deltaD #returns absolute value
 
     def recordNewCone(self,distance): #records the location of a new cone
-        self.coneLocation = self.resolveXY(self.x,self.y,distance,self.angle) #gets the coordinates of the new cone
+        self.coneLocation = self.resolveXY(self.x,self.y,distance,self.angle_()) #gets the coordinates of the new cone
         self.duplicateCone = False
 
         for cone in self.allCones: #for all the cones currently in the field
@@ -462,7 +527,7 @@ class Robot:
         else:
             return False
 
-    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 2.5): #gets the readings of the ultrasonic, with many overloads
+    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 1.5): #gets the readings of the ultrasonic, with many overloads
         self.leftNumbers = [] #variables
         self.rightNumbers = []
         self.leftReading = 0
@@ -564,7 +629,7 @@ class Robot:
     def resolveReadings(self,option,distance = 1): #resolve the location of the cone using the ultrasonic sensors
 
         if option == 1: #BASIC DISTANCE CHECK, QUICK TO SEE IF ANYTHING IN THE WAY
-            self.readingsResult = self.averageReadings(0,5) #grabs readings with 0 delay in the checks and half the number of readings
+            self.readingsResult = self.averageReadings(0) #grabs readings with 0 delay in the checks and half the number of readings
             if self.readingsResult.left < 40 or self.readingsResult.right < 40: #checks to see if the readings are below a certain distance
                 return True #returns true
             else:
@@ -601,9 +666,15 @@ class Robot:
 
     def lookingAtCone(self): #returns whether the robot is looking at a cone using colour sensors
         if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5 or self.colorLeft.named_color() == 6 or self.colorLeft.named_color() == 7) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5 or self.colorRight.named_color() == 6 or self.colorRight.named_color() == 7):
-            return True
+            if(robot.resolveReadings(4,5)):
+                return True
+            else:
+                return False
         else:
             return False
+
+    def angle_(self):
+        return round(self.gyro.angle()*-1)
 
     # ---------------------------------------
 
@@ -611,7 +682,7 @@ class Robot:
 
     def debug(self,updateScreen = True,debugDelay = 0,color = None): #used solely for debugging, allows time delay, screen update and led change
         if updateScreen == True:
-            vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1) #updates screen
+            vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle_)),1) #updates screen
 
         if color != None:
             self.code = self.colours[color] #sets led colour
@@ -635,9 +706,10 @@ RightColour = vexiq.ColorSensor(9) # hue
 UltraLeft   = vexiq.DistanceSensor(10, vexiq.UNIT_CM)
 UltraRight  = vexiq.DistanceSensor(11, vexiq.UNIT_CM)
 TouchLed    = vexiq.TouchLed(12)
+Gyro_ = vexiq.Gyro(6)
 
 import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 211)
 #endregion config
 
 # DRIVETRAIN: 212 for foam tiles and table
@@ -647,13 +719,20 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 
 # Pre-program object creation ---------------
 
-robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed) #create robot class
+robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed,Gyro_) #create robot class
 allPaths = [] #stores all paths in use
 coneWallDistance = 0 #the distance where they have reached the wall and cone cannot be in the way
 zoneWalls = Walls(125,0,-50,50)
 allConesHerded = False
 
 # -------------------------------------------
+
+def startGyro(): #calibrates both gyros
+    Gyro_.calibrate()
+    while(Gyro_.is_calibrating()):
+        continue
+    Gyro_.angle(0)
+    return True
 
 # Search Functions --------------------------
 
@@ -665,27 +744,8 @@ def traversePathSimple(path):
 
         while robot.x != path.xLine: #keep aligning to the path line
 
-            if robot.x != path.xLine:
-                result = robot.moveToXYA(path.xLine,robot.y) #move back to the path
+            robot.moveToXYA(path.xLine,robot.y,None,True) #move back to the path
                 
-                if result == False:
-                    result = robot.alignToCone()
-                    if result != False:
-                        if robot.carryingCone == True:
-
-                            path.xLastPosition = robot.x #sets the xLastPosition and yLastPosiiton variables
-                            path.yLastPosiiton = robot.y
-
-                            robot.debug(False,0,"red")
-                            robot.returnToHerdPoint(True) #take cone back
-                            robot.carryingCone = False #set carrying cone to true
-                            robot.debug(False,0,"red_orange")
-                            vexiq.lcd_write("Returning to path")
-                            robot.returnToPathPoint(path) #come back to path point
-
-                        else:
-                            robot.collectCone() #pickup the cone
-                            robot.carryingCone = True #set carrying cone to true 
         
         #move the robot to the goalY ----------------------------------------------------------
 
@@ -741,9 +801,10 @@ def herdAllCones():
 
 # Main Program ------------------------------
 
+startGyro()
+
 while True:
     robot.light("blue")
-    vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle)),1) #standard screen output
 
     if robot.isActivated():
 
@@ -752,7 +813,10 @@ while True:
 
         # Motion call ---------------
 
-        herdAllCones()
+        robot.rotateTo(90)
+        robot.moveBy(20)
+
+        vexiq.lcd_write("done")
 
         # ---------------------------
 
