@@ -72,7 +72,6 @@ class Robot:
 
     x = 0 # x coordinate
     y = 0 # y coordinate
-    #angle = 0 # current angle of the robot
     robotRadius = 7 # distacne between center of displacement and ultrasonic sensors
     allCones = [] #holds all the cones
     carryingCone = False # shows whether the robot is carrying a cone or not
@@ -96,7 +95,7 @@ class Robot:
         self.armLeft = armL
         self.armRight = armR
         self.claw = claw
-        self.gyro = gyro
+        self.gyroscope = gyro
         
 
         self.claw.off()
@@ -148,6 +147,10 @@ class Robot:
     # ---------------------------------------
 
     # NON-DEV robot specific functions ------
+
+    def angle_(self):
+        self.tempAngle = round(self.gyroscope.angle()*-1) 
+        return self.tempAngle
 
     def isActivated(self): #will return true if the led is pressed
         if self.led.is_touch(): #checks the hardware
@@ -322,40 +325,11 @@ class Robot:
 
         return True
 
-    def rotateToOld(self,degrees): #rotate the robot to a certain angle
-
-        if degrees < -180 or degrees > 180:
-            return False #invalid goal angle
-        else:
-            self.currentAngle = self.angle_() #grabs the current angle of the robot
-            self.goalAngle = round(degrees) #sets the goal degrees to a new variable
-
-            if self.currentAngle < 0 and self.goalAngle == 180: #couteract 180/-180 clash
-                self.goalAngle = -180
-            elif self.currentAngle > 0 and self.goalAngle == -180:
-                self.goalAngle = 180
-            elif self.currentAngle == 180 and self.goalAngle < 0:
-                self.currentAngle = -180
-            elif self.currentAngle == -180 and self.goalAngle > 0:
-                self.currentAngle = 180
-
-            self.deltaR = self.goalAngle - self.currentAngle #calculates how far the robot needs to rotate
-
-            #changes the deltaR value to the desired value (avoids 180/-180 cutoff)
-            if self.deltaR > 180:
-                self.deltaR = (self.deltaR - 360)
-            elif self.deltaR < -180:
-                self.deltaR = (self.deltaR + 360)
-
-            self.drivetrain.turn_until(22,-1*self.deltaR) #turn the robot
-
-            #self.angle() = self.goalAngle #set new angle
-
-            return True
-
     def rotateTo(self,degrees):
         
         # intial deltaR -------------------------
+
+        vexiq.lcd_write(self.angle_())
 
         if degrees < -180 or degrees > 180:
             return False #invalid goal angle
@@ -673,16 +647,13 @@ class Robot:
         else:
             return False
 
-    def angle_(self):
-        return round(self.gyro.angle()*-1)
-
     # ---------------------------------------
 
     # DEV robot specific functions ----------
 
     def debug(self,updateScreen = True,debugDelay = 0,color = None): #used solely for debugging, allows time delay, screen update and led change
         if updateScreen == True:
-            vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle_)),1) #updates screen
+            vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle_())),1) #updates screen
 
         if color != None:
             self.code = self.colours[color] #sets led colour
