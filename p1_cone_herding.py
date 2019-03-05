@@ -229,14 +229,14 @@ class Robot:
 
         self.moveBy(-8,True)
         self.moveBy(16,True)
-        self.rotateBy(-10)
-        self.rotateBy(20)
-        self.rotateBy(-10)
+        self.drivetrain.turn_until(22,-10) #turn the robot
+        self.drivetrain.turn_until(22, 20) #turn the robot
+        self.drivetrain.turn_until(22,-10) #turn the robot
         self.moveBy(8,True)
         self.moveBy(-2,True)
 
         self.closeClaw()
-        sys.sleep(0.4)
+        sys.sleep(0.6)
         self.liftArm()
         self.light("orange",True)
 
@@ -328,8 +328,6 @@ class Robot:
     def rotateTo(self,degrees):
         
         # intial deltaR -------------------------
-
-        vexiq.lcd_write(self.angle_())
 
         if degrees < -180 or degrees > 180:
             return False #invalid goal angle
@@ -739,7 +737,6 @@ def traversePathSimple(path):
                         robot.returnToHerdPoint(True) #take cone back
                         robot.carryingCone = False #set carrying cone to true
                         robot.debug(False,0,"red_orange")
-                        vexiq.lcd_write("Returning to path")
                         robot.returnToPathPoint(path) #come back to path point
 
                     else:
@@ -777,6 +774,9 @@ startGyro()
 while True:
     robot.light("blue")
 
+    vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle_())),1) #updates screen
+
+
     if robot.isActivated():
 
         sys.sleep(0.2)
@@ -784,10 +784,7 @@ while True:
 
         # Motion call ---------------
 
-        robot.rotateTo(90)
-        robot.moveBy(20)
-
-        vexiq.lcd_write("done")
+        herdAllCones()
 
         # ---------------------------
 
