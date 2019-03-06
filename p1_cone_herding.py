@@ -168,16 +168,17 @@ class Robot:
     def returnToHerdPoint(self,deliverCone = True): #return the robot to the herd point
         self.hx = self.herdpoint.x #grab the herdpoint coordinates
         self.hy = self.herdpoint.y
-        self.moveToXYA(self.hx,self.hy,None,True) #move the robot to the herdpoint
+        self.result = self.moveToXYA(self.hx,self.hy,None,True) #move the robot to the herdpoint
         if deliverCone == True:
             self.deliverCone()
         return True
 
     def returnToPathPoint(self,path): #return the robot to a point on a path
+        vexiq.lcd_write("X: " + str(path.xlastVisited) + ", Y: " + str(path.ylastVisited))
         self.moveToXYA(path.xlastVisited,path.ylastVisited,None,True)
         return True
 
-    def moveToXYA(self,x,y,angle = None,ignoreCone = False): #move the robot to an x coord, y coord and angle of rotation
+    def moveToXYA(self,x,y,angle = None,ignoreCone = False, distanceReduction = 0): #move the robot to an x coord, y coord and angle of rotation
         self.currentX = self.x #grabs current x coordinate
         self.currentY = self.y #grabs current y coordinate
 
@@ -209,13 +210,11 @@ class Robot:
                 self.rotateTo(self.rotation) #rotate to this newly calculated angle
 
         self.distance = self.calculateDeltaD(x,y,self.currentX,self.currentY) # calculate the absolute value between the two coordinates
-        self.motion = self.moveBy(self.distance,ignoreCone) #move by the newly found distance, and specifiying the ignoreCone parmater with a variable
+        self.motion = self.moveBy((self.distance - distanceReduction),ignoreCone) #move by the newly found distance, and specifiying the ignoreCone parmater with a variable
 
         if self.motion == False: #if the robot was unable to complete its journey
             return False #return that journey was unsuccessful
         else: #otherwsie,
-            self.x = x #set new x coordinate
-            self.y = y #set new y coordinate
             if angle != None: # if a end rotation angle was specified
                 self.rotateTo(angle) #rotate to the specified angle
             return True #return that journey was successful
@@ -422,7 +421,9 @@ class Robot:
         return None
 
     def closeClaw(self): #close the claw
-        self.claw.off()
+        self.claw.run(100)
+        sys.sleep(1)
+        self.claw.hold()
         return True
 
     def openClaw(self): #open the claw
@@ -499,7 +500,7 @@ class Robot:
         else:
             return False
 
-    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 1.5): #gets the readings of the ultrasonic, with many overloads
+    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 1.2): #gets the readings of the ultrasonic, with many overloads
         self.leftNumbers = [] #variables
         self.rightNumbers = []
         self.leftReading = 0
@@ -691,7 +692,7 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 211)
 robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed,Gyro_) #create robot class
 allPaths = [] #stores all paths in use
 coneWallDistance = 0 #the distance where they have reached the wall and cone cannot be in the way
-zoneWalls = Walls(125,0,-50,50)
+zoneWalls = Walls(100,0,-50,50)
 allConesHerded = False
 
 # -------------------------------------------
@@ -730,8 +731,8 @@ def traversePathSimple(path):
                 if result != False:
                     if robot.carryingCone == True:
 
-                        path.xLastPosition = robot.x #sets the xLastPosition and yLastPosiiton variables
-                        path.yLastPosiiton = robot.y
+                        path.xlastVisited = robot.x #sets the xLastPosition and yLastPosiiton variables
+                        path.ylastVisited = robot.y
 
                         robot.debug(False,0,"red")
                         robot.returnToHerdPoint(True) #take cone back
@@ -751,19 +752,20 @@ def traversePathSimple(path):
 def createNewPath():
     pass
 
-def initialUpDown():
-    tempPath1 = Path("up",0,zoneWalls.top,zoneWalls.bottom) #traverse upwards
-    traversePathSimple(tempPath1)
+def initialPathTraverse():
 
-    tempPath2 = Path("down",0,zoneWalls.top,zoneWalls.bottom) #traverse downwards
-    traversePathSimple(tempPath2)
-
-    initialPath = Path("down",0,zoneWalls.top,zoneWalls.bottom) #creates the intial path and sends it to the array
-    initialPath.completed = True #set path to completed                         
+    initialPath = Path("up",0,zoneWalls.top,zoneWalls.bottom) #creates the intial path and sends it to the array
+    traversePathSimple(initialPath)
     allPaths.append(initialPath) #append path to array
 
+    initialPath = Path("down",25,zoneWalls.top,zoneWalls.bottom)
+    traversePathSimple(initialPath)
+    allPaths.append(initialPath)
+
+    vexiq.lcd_write(allPaths[0].completed)
+
 def herdAllCones():
-    initialUpDown()
+    initialPathTraverse()
 
 # -------------------------------------------
 
@@ -784,7 +786,9 @@ while True:
 
         # Motion call ---------------
 
-        herdAllCones()
+        #herdAllCones()
+
+        robot.moveToXYA(0,30,None,True,15)
 
         # ---------------------------
 
