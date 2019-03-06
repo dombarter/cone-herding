@@ -56,6 +56,7 @@ class Path:
         self.completed = False
         self.xlastVisited = 0
         self.ylastVisited = 0
+        self.alastVisited = 0
         self.simpleTraverse = False
 
         if self.direction == "up" and self.yUpper != None: #sets the goalY if they are able to be calculated
@@ -97,13 +98,9 @@ class Robot:
         self.claw = claw
         self.gyroscope = gyro
         
-
         self.claw.off()
         self.armLeft.hold()
         self.armRight.hold()
-
-        self.colorLeft.led_on()
-        self.colorRight.led_on()
 
         self.colorLeft.set_proximity_threshold(0) # sets the accuracy and distance on the colour sensors
         self.colorRight.set_proximity_threshold(0)
@@ -168,14 +165,21 @@ class Robot:
     def returnToHerdPoint(self,deliverCone = True): #return the robot to the herd point
         self.hx = self.herdpoint.x #grab the herdpoint coordinates
         self.hy = self.herdpoint.y
+
+        if(self.x > self.hx){
+            self.moveToXYA((self.x - 15),self.y,None,True)
+        }
+        elif(self.x < self.hx){
+            self.moveToXYA((self.x + 15),self.y,None,True)
+        }
+
         self.result = self.moveToXYA(self.hx,self.hy,None,True) #move the robot to the herdpoint
         if deliverCone == True:
             self.deliverCone()
         return True
 
     def returnToPathPoint(self,path): #return the robot to a point on a path
-        vexiq.lcd_write("X: " + str(path.xlastVisited) + ", Y: " + str(path.ylastVisited))
-        self.moveToXYA(path.xlastVisited,path.ylastVisited,None,True)
+        self.moveToXYA(path.xlastVisited,path.ylastVisited,path.alastVisited,True)
         return True
 
     def moveToXYA(self,x,y,angle = None,ignoreCone = False, distanceReduction = 0): #move the robot to an x coord, y coord and angle of rotation
@@ -639,7 +643,7 @@ class Robot:
 
     def lookingAtCone(self): #returns whether the robot is looking at a cone using colour sensors
         if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5 or self.colorLeft.named_color() == 6 or self.colorLeft.named_color() == 7) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5 or self.colorRight.named_color() == 6 or self.colorRight.named_color() == 7):
-            if(robot.resolveReadings(4,5)):
+            if(robot.resolveReadings(4,12)):
                 return True
             else:
                 return False
@@ -679,11 +683,8 @@ TouchLed    = vexiq.TouchLed(12)
 Gyro_ = vexiq.Gyro(6)
 
 import drivetrain
-dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 211)
+dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 #endregion config
-
-# DRIVETRAIN: 212 for foam tiles and table
-# DRIVETRAIN: 215 for carpet
 
 # -------------------------------------------
 
@@ -714,8 +715,29 @@ def traversePathSimple(path):
 
         while robot.x != path.xLine: #keep aligning to the path line
 
-            robot.moveToXYA(path.xLine,robot.y,None,True) #move back to the path
-                
+            result = robot.moveToXYA(path.xLine,robot.y) #move back to the path
+
+            if result == False:
+                if robot.y < path.goalY + coneWallDistance and robot.y > path.goalY - coneWallDistance: #near enough to the wall
+                    break #complete the path
+                else: #it is a cone (simple traverse knows where walls are)
+                    result = robot.alignToCone() #align to the cone
+                    if result != False:
+                        if robot.carryingCone == True:
+
+                            path.xlastVisited = robot.x #sets the xLastPosition and yLastPosiiton variables
+                            path.ylastVisited = robot.y
+                            path.alastVisited = robot.angle_()
+
+                            robot.debug(False,0,"red")
+                            robot.returnToHerdPoint(True) #take cone back
+                            robot.carryingCone = False #set carrying cone to true
+                            robot.debug(False,0,"red_orange")
+                            robot.returnToPathPoint(path) #come back to path point
+
+                        else:
+                            robot.collectCone() #pickup the cone
+                            robot.carryingCone = True #set carrying cone to true    
         
         #move the robot to the goalY ----------------------------------------------------------
 
@@ -733,6 +755,7 @@ def traversePathSimple(path):
 
                         path.xlastVisited = robot.x #sets the xLastPosition and yLastPosiiton variables
                         path.ylastVisited = robot.y
+                        path.alastVisited = robot.angle_()
 
                         robot.debug(False,0,"red")
                         robot.returnToHerdPoint(True) #take cone back
@@ -786,9 +809,7 @@ while True:
 
         # Motion call ---------------
 
-        #herdAllCones()
-
-        robot.moveToXYA(0,30,None,True,15)
+        herdAllCones()
 
         # ---------------------------
 
