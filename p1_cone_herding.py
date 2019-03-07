@@ -77,6 +77,7 @@ class Robot:
     allCones = [] #holds all the cones
     carryingCone = False # shows whether the robot is carrying a cone or not
     robotWidth = 25 #needs to be measured
+    numberHerded = 0
 
     #array storing all the colour codes for the led
     colours = {"off":0,"red":1,"red_orange":2,"orange":3,"yellow_orange":4,"yellow":5,"yellow_green":6,"green":7,"blue_green":8,"blue":9,"blue_violet":10,"violet":11,"red_violet":12,"white":13}
@@ -166,20 +167,29 @@ class Robot:
         self.hx = self.herdpoint.x #grab the herdpoint coordinates
         self.hy = self.herdpoint.y
 
-        if(self.x > self.hx){
+        if(self.x > self.hx):
             self.moveToXYA((self.x - 15),self.y,None,True)
-        }
-        elif(self.x < self.hx){
+        elif(self.x < self.hx):
             self.moveToXYA((self.x + 15),self.y,None,True)
-        }
 
         self.result = self.moveToXYA(self.hx,self.hy,None,True) #move the robot to the herdpoint
+        self.numberHerded = self.numberHerded + 1
         if deliverCone == True:
             self.deliverCone()
         return True
 
     def returnToPathPoint(self,path): #return the robot to a point on a path
-        self.moveToXYA(path.xlastVisited,path.ylastVisited,path.alastVisited,True)
+
+        self.px = path.xlastVisited
+        self.py = path.ylastVisited
+        self.pa = path.alastVisited
+
+        if(self.px > self.x):
+            self.moveToXYA((self.px - 15),self.py,None,True)
+        elif(self.px < self.x):
+            self.moveToXYA((self.px + 15),self.py,None,True)
+
+        self.moveToXYA(self.px,self.py,self.pa,True)
         return True
 
     def moveToXYA(self,x,y,angle = None,ignoreCone = False, distanceReduction = 0): #move the robot to an x coord, y coord and angle of rotation
@@ -642,11 +652,13 @@ class Robot:
             return None
 
     def lookingAtCone(self): #returns whether the robot is looking at a cone using colour sensors
-        if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5 or self.colorLeft.named_color() == 6 or self.colorLeft.named_color() == 7) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5 or self.colorRight.named_color() == 6 or self.colorRight.named_color() == 7):
-            if(robot.resolveReadings(4,12)):
+        if (self.colorLeft.named_color() == 3 or self.colorLeft.named_color() == 4 or self.colorLeft.named_color() == 5 or self.colorLeft.named_color() == 6 or self.colorLeft.named_color() == 7 or self.colorLeft.named_color() == 8) and (self.colorRight.named_color() == 3 or self.colorRight.named_color() == 4 or self.colorRight.named_color() == 5 or self.colorRight.named_color() == 6 or self.colorRight.named_color() == 7 or self.colorRight.named_color() == 8):
+            if(robot.resolveReadings(4,8)):
                 return True
             else:
-                return False
+               return False
+        elif(robot.resolveReadings(4,5)):
+            return True
         else:
             return False
 
@@ -715,7 +727,10 @@ def traversePathSimple(path):
 
         while robot.x != path.xLine: #keep aligning to the path line
 
-            result = robot.moveToXYA(path.xLine,robot.y) #move back to the path
+            result = (robot.resolveReadings(1) == False)
+
+            if(result == True):
+                result = robot.moveToXYA(path.xLine,robot.y) #move back to the path
 
             if result == False:
                 if robot.y < path.goalY + coneWallDistance and robot.y > path.goalY - coneWallDistance: #near enough to the wall
@@ -785,7 +800,11 @@ def initialPathTraverse():
     traversePathSimple(initialPath)
     allPaths.append(initialPath)
 
-    vexiq.lcd_write(allPaths[0].completed)
+    initialPath = Path("up",50,zoneWalls.top,zoneWalls.bottom)
+    traversePathSimple(initialPath)
+    allPaths.append(initialPath)
+
+    robot.returnToHerdPoint()
 
 def herdAllCones():
     initialPathTraverse()
@@ -800,7 +819,6 @@ while True:
     robot.light("blue")
 
     vexiq.lcd_write("X: " + str(robot.intify(robot.x)) + ", Y: "+ str(robot.intify(robot.y)) + ", A: " + str(robot.intify(robot.angle_())),1) #updates screen
-
 
     if robot.isActivated():
 
