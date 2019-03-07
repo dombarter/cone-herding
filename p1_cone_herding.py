@@ -106,7 +106,7 @@ class Robot:
         self.colorLeft.set_proximity_threshold(0) # sets the accuracy and distance on the colour sensors
         self.colorRight.set_proximity_threshold(0)
 
-        self.herdpoint = Herdpoint(0,0) # sets the location of the herdpoint
+        self.herdpoint = Herdpoint(0,-50) # sets the location of the herdpoint
 
 
     # ---------------------------------------
@@ -172,8 +172,13 @@ class Robot:
         elif(self.x < self.hx):
             self.moveToXYA((self.x + 15),self.y,None,True)
 
-        self.result = self.moveToXYA(self.hx,self.hy,None,True) #move the robot to the herdpoint
-        self.numberHerded = self.numberHerded + 1
+        self.result = self.moveToXYA(self.hx,self.hy) #move the robot to the herdpoint
+
+        self.intialDistance = self.resolveReadings(2) # grab the sighting distance
+        if self.intialDistance < 40: #only if there is another cone there 
+            self.deltaD = round(self.intialDistance - (35 - self.robotRadius)) #calculate change in displacement
+            self.moveBy(self.deltaD,True) #move the robot
+
         if deliverCone == True:
             self.deliverCone()
         return True
