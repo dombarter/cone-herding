@@ -168,11 +168,12 @@ class Robot:
         self.hy = self.herdpoint.y
 
         if(self.x > self.hx):
-            self.moveToXYA((self.x - 15),self.y,None,True)
+            self.moveToXYA((self.x - self.robotWidth),self.y,None,True)
         elif(self.x < self.hx):
-            self.moveToXYA((self.x + 15),self.y,None,True)
+            self.moveToXYA((self.x + self.robotWidth),self.y,None,True)
 
-        self.result = self.moveToXYA(self.hx,self.hy) #move the robot to the herdpoint
+        self.result = self.moveToXYA(self.hx,self.hy,None,True,50) #move the robot to the herdpoint
+        self.result = self.moveToXYA(self.hx,self.hy)
 
         self.intialDistance = self.resolveReadings(2) # grab the sighting distance
         if self.intialDistance < 40: #only if there is another cone there 
@@ -190,9 +191,9 @@ class Robot:
         self.pa = path.alastVisited
 
         if(self.px > self.x):
-            self.moveToXYA((self.px - 15),self.py,None,True)
+            self.moveToXYA((self.px - self.robotWidth),self.py,None,True)
         elif(self.px < self.x):
-            self.moveToXYA((self.px + 15),self.py,None,True)
+            self.moveToXYA((self.px + self.robotWidth),self.py,None,True)
 
         self.moveToXYA(self.px,self.py,self.pa,True)
         return True
@@ -278,7 +279,7 @@ class Robot:
         self.remainder = self.intify(self.cm % 30)
 
         if self.numberOfIterations < 0: #going backwards!
-            self.drivetrain.drive_until(30,self.cm*10) # no need to check for cones so just go for it
+            self.drivetrain.drive_until(50,self.cm*10) # no need to check for cones so just go for it
 
             self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentAngle) #update coordinates
             self.x , self.y = self.resolveResult.x , self.resolveResult.y
@@ -297,7 +298,7 @@ class Robot:
                         if self.resolveReadings(1) == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
-                    self.drivetrain.drive_until(30,300) #move robot by 15cm
+                    self.drivetrain.drive_until(50,300) #move robot by 15cm
                     self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
@@ -307,7 +308,7 @@ class Robot:
 
                 for i in range(0,self.numberOfIterations):
 
-                    self.drivetrain.drive_until(30,300)
+                    self.drivetrain.drive_until(50,300)
                     self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
@@ -315,7 +316,7 @@ class Robot:
                         if self.resolveReadings(1) == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
-                self.drivetrain.drive_until(30,self.remainder*10)
+                self.drivetrain.drive_until(50,self.remainder*10)
                 self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
                 self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
@@ -623,7 +624,11 @@ class Robot:
         if option == 1: #BASIC DISTANCE CHECK, QUICK TO SEE IF ANYTHING IN THE WAY
             self.readingsResult = self.averageReadings(0) #grabs readings with 0 delay in the checks and half the number of readings
             if self.readingsResult.left < 40 or self.readingsResult.right < 40: #checks to see if the readings are below a certain distance
-                return True #returns true
+                self.readingsResult = self.averageReadings(0) #grabs readings with 0 delay in the checks and half the number of readings
+                if self.readingsResult.left < 40 or self.readingsResult.right < 40: #checks to see if the readings are below a certain distance
+                    return True #returns true
+                else:
+                    return False #returns false
             else:
                 return False #returns false
 
