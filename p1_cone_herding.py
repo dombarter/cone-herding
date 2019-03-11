@@ -11,10 +11,9 @@ import math
 
 # XYCoordinates class
 class XYCoordinates:
-    def __init__(self): #intiation function
-        self.x = 0 #x coordinate
-        self.y = 0 #y coordinate
-        return None
+    def __init__(self,x = 0,y = 0): #intiation function
+        self.x = x #x coordinate
+        self.y = y #y coordinate
 
 # Cone class
 class Cone:
@@ -77,7 +76,8 @@ class Robot:
     allCones = [] #holds all the cones
     carryingCone = False # shows whether the robot is carrying a cone or not
     robotWidth = 25 #needs to be measured
-    numberHerded = 0
+    coneWidth = 15
+    numberOfConesHerded = 0
 
     #array storing all the colour codes for the led
     colours = {"off":0,"red":1,"red_orange":2,"orange":3,"yellow_orange":4,"yellow":5,"yellow_green":6,"green":7,"blue_green":8,"blue":9,"blue_violet":10,"violet":11,"red_violet":12,"white":13}
@@ -106,7 +106,7 @@ class Robot:
         self.colorLeft.set_proximity_threshold(0) # sets the accuracy and distance on the colour sensors
         self.colorRight.set_proximity_threshold(0)
 
-        self.herdpoint = Herdpoint(0,-50) # sets the location of the herdpoint
+        self.herdpoint = Herdpoint(-50,-50) # sets the location of the herdpoint
 
     # ---------------------------------------
 
@@ -168,21 +168,21 @@ class Robot:
 
         self.moveToXYA(0,self.y,None,True)
 
-        # if(self.x > self.hx):
-        #     self.moveToXYA((self.x - self.robotWidth),self.y,None,True)
-        # elif(self.x < self.hx):
-        #     self.moveToXYA((self.x + self.robotWidth),self.y,None,True)
+        self.triCoords = self.triNumbers(self.numberOfConesHerded)
 
-        self.result = self.moveToXYA(self.hx,self.hy,None,True,50) #move the robot to the herdpoint
-        self.result = self.moveToXYA(self.hx,self.hy)
+        self.hxm = self.hx + (self.coneWidth * self.triCoords.x)
+        self.hym = self.hy + (self.coneWidth * self.triCoords.y)
 
-        self.intialDistance = self.resolveReadings(2) # grab the sighting distance
-        if self.intialDistance < 40: #only if there is another cone there 
-            self.deltaD = round(self.intialDistance - (35 - self.robotRadius)) #calculate change in displacement
-            self.moveBy(self.deltaD,True) #move the robot
+        vexiq.lcd_write("Herd-X: " + str(self.hxm),2)
+        vexiq.lcd_write("Herd-Y: " + str(self.hym),3)
+
+        self.result = self.moveToXYA(self.hxm , self.hym , None , True, 25)
 
         if deliverCone == True:
             self.deliverCone()
+
+        self.numberOfConesHerded = self.numberOfConesHerded + 1
+
         return True
 
     def returnToPathPoint(self,path): #return the robot to a point on a path
@@ -282,7 +282,7 @@ class Robot:
         self.remainder = self.intify(self.cm % 30)
 
         if self.numberOfIterations < 0: #going backwards!
-            self.drivetrain.drive_until(35,self.cm*10) # no need to check for cones so just go for it
+            self.drivetrain.drive_until(30,self.cm*10) # no need to check for cones so just go for it
 
             self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentAngle) #update coordinates
             self.x , self.y = self.resolveResult.x , self.resolveResult.y
@@ -301,7 +301,7 @@ class Robot:
                         if self.resolveReadings(1) == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
-                    self.drivetrain.drive_until(35,300) #move robot by 15cm
+                    self.drivetrain.drive_until(30,300) #move robot by 15cm
                     self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
@@ -311,7 +311,7 @@ class Robot:
 
                 for i in range(0,self.numberOfIterations):
 
-                    self.drivetrain.drive_until(35,300)
+                    self.drivetrain.drive_until(30,300)
                     self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
@@ -319,7 +319,7 @@ class Robot:
                         if self.resolveReadings(1) == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
-                self.drivetrain.drive_until(35,self.remainder*10)
+                self.drivetrain.drive_until(30,self.remainder*10)
                 self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
                 self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
@@ -523,7 +523,7 @@ class Robot:
         else:
             return False
 
-    def averageReadings(self,delay = 0.1,repeat = 10,sd_multiplier = 1.2): #gets the readings of the ultrasonic, with many overloads
+    def averageReadings(self,delay = 0.1,repeat = 8,sd_multiplier = 1.2): #gets the readings of the ultrasonic, with many overloads
         self.leftNumbers = [] #variables
         self.rightNumbers = []
         self.leftReading = 0
@@ -553,6 +553,11 @@ class Robot:
         self.rightReading = round(self.meanOfValues(self.newRightNumbers),2)
         self.newReadings = Readings(self.leftReading,self.rightReading) #creates a new readings class
         
+        self.leftNumbers = []
+        self.rightNumbers = []
+        self.newLeftNumbers = []
+        self.newRightNumbers = []
+
         del self.leftNumbers #memory clearing
         del self.rightNumbers
         del self.leftReading
@@ -686,6 +691,16 @@ class Robot:
             return True
         else:
             return False
+
+    def triNumbers(self,n):
+
+        self.number = n
+
+        self.estimate = round(math.sqrt((2*self.number) + 1) - 1)
+        self.y_ = 0.5 * ( (2 * self.number) - (self.estimate ** 2) - (self.estimate) )
+        self.x_ = 0.5 * ( (self.estimate ** 2) + (3 * self.estimate) - (2 * self.number) )
+
+        return XYCoordinates(self.x_,self.y_)
 
     # ---------------------------------------
 
@@ -850,6 +865,15 @@ while True:
 
         # Motion call ---------------
 
+        # robot.moveBy(50,True)
+        # robot.rotateTo(90)
+        # robot.moveBy(50,True)
+        # robot.rotateTo(180)
+        # robot.moveBy(50,True)
+        # robot.rotateTo(-90)
+        # robot.moveBy(50,True)
+        # robot.rotateTo(0)
+        
         herdAllCones()
 
         # ---------------------------
