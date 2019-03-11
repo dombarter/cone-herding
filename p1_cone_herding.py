@@ -282,7 +282,7 @@ class Robot:
         self.remainder = self.intify(self.cm % 30)
 
         if self.numberOfIterations < 0: #going backwards!
-            self.drivetrain.drive_until(45,self.cm*10) # no need to check for cones so just go for it
+            self.drivetrain.drive_until(35,self.cm*10) # no need to check for cones so just go for it
 
             self.resolveResult = self.resolveXY(self.x,self.y,self.cm,self.currentAngle) #update coordinates
             self.x , self.y = self.resolveResult.x , self.resolveResult.y
@@ -301,7 +301,7 @@ class Robot:
                         if self.resolveReadings(1) == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
-                    self.drivetrain.drive_until(45,300) #move robot by 15cm
+                    self.drivetrain.drive_until(35,300) #move robot by 15cm
                     self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
@@ -311,7 +311,7 @@ class Robot:
 
                 for i in range(0,self.numberOfIterations):
 
-                    self.drivetrain.drive_until(45,300)
+                    self.drivetrain.drive_until(35,300)
                     self.resolveResult = self.resolveXY(self.x,self.y,30,self.currentAngle)
                     self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
@@ -319,7 +319,7 @@ class Robot:
                         if self.resolveReadings(1) == True: #if cone is in the way
                             return False #robot has been unable to reach the final destination
 
-                self.drivetrain.drive_until(45,self.remainder*10)
+                self.drivetrain.drive_until(35,self.remainder*10)
                 self.resolveResult = self.resolveXY(self.x,self.y,self.remainder,self.currentAngle)
                 self.x , self.y = self.resolveResult.x , self.resolveResult.y
 
@@ -552,6 +552,18 @@ class Robot:
         self.leftReading = round(self.meanOfValues(self.newLeftNumbers),2) #creates new averages
         self.rightReading = round(self.meanOfValues(self.newRightNumbers),2)
         self.newReadings = Readings(self.leftReading,self.rightReading) #creates a new readings class
+        
+        del self.leftNumbers #memory clearing
+        del self.rightNumbers
+        del self.leftReading
+        del self.rightReading
+        del self.sdl
+        del self.sdr
+        del self.lmean
+        del self.rmean
+        del self.newLeftNumbers
+        del self.newRightNumbers
+        
         return self.newReadings #returns the readings
 
     def alignToCone(self): #will align the robot to a cone infront of it
