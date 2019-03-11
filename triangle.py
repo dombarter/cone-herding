@@ -23,5 +23,5 @@ def getCoords(n):
                     return(coords(yLine.index(number),triangle.index(yLine)))
         iterate+=1
 
-res = getCoords(17)
+res = getCoords(31)
 print(str(res.x) + "," + str(res.y))
