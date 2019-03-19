@@ -717,6 +717,9 @@ robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRig
 allPaths = [] #stores all paths in use
 coneWallDistance = 0 #the distance where they have reached the wall and cone cannot be in the way
 zoneWalls = Walls(100,0,-50,50)
+furthestLeftPath = 0
+furthestRightPath = 0
+currentPosition = "bottom"
 allConesHerded = False
 
 # -------------------------------------------
@@ -799,7 +802,37 @@ def traversePathSimple(path):
     return path # path was completed
 
 def createNewPath():
-    pass
+    potentialLeft = furthestLeftPath - robot.robotWidth # creates potential left and right
+    potentialRight = furthestRightPath + robot.robotWidth
+    
+    if(potentialLeft < zoneWalls.left and potentialRight > zoneWalls.right): #returns none if no new paths
+        return None
+    
+    if(potentialLeft >= zoneWalls.left and robot.x <= 0): #if a left path is okay
+        if(currentPosition == "bottom"): #if needs path going up
+            newPath = Path("up",potentialLeft,zoneWalls.top,zoneWalls.bottom)
+            currentPosition = "top"
+            furthestLeftPath = potentialLeft
+        elif(currentPosition == "top"): #if needs path going down
+            newPath = Path("down",potentialLeft,zoneWalls.top,zoneWalls.bottom)
+            currentPosition = "bottom"
+            furthestLeftPath = potentialLeft
+
+        return newPath #returns the new path
+    elif(potentialRight <= zoneWalls.right and robot.x >= 0):
+        if(currentPosition == "bottom"): #if paths needs going up
+            newPath = Path("up",potentialRight,zoneWalls.top,zoneWalls.bottom)
+            currentPosition = "top"
+            furthestRightPath = potentialRight
+        elif(currentPosition == "top"): #if path needs going down
+            newPath = Path("up",potentialRight,zoneWalls.top,zoneWalls.bottom)
+            currentPosition = "bottom"
+            furthestRightPath = potentialRight
+
+        return newPath #retursn the new path
+    else:
+        return None
+
 
 def initialPathTraverse():
 

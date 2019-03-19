@@ -1,0 +1,4 @@
+1. create new path left and right
+2. herd point left and right
+3. path traverse imporvement
+4. redo path when finished 
