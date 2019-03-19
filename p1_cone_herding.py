@@ -15,14 +15,6 @@ class XYCoordinates:
         self.x = x #x coordinate
         self.y = y #y coordinate
 
-# Cone class
-class Cone:
-    def __init__(self,x,y): #initiation function
-        self.x = x # x coordinate
-        self.y = y # y cordinate
-        self.herded = False # shows whether the cone has been herded yet
-        return None
-
 # Readings class
 class Readings:
     def __init__(self,left,right):
@@ -504,26 +496,7 @@ class Robot:
         self.deltaD = math.fabs(math.sqrt((self.deltaX ** 2) + (self.deltaY ** 2))) # performs pythagoras on two values
         return self.deltaD #returns absolute value
 
-    def recordNewCone(self,distance): #records the location of a new cone
-        self.coneLocation = self.resolveXY(self.x,self.y,distance,self.angle_()) #gets the coordinates of the new cone
-        self.duplicateCone = False
-
-        for cone in self.allCones: #for all the cones currently in the field
-            # finds the distance between new cone and cone in question
-            self.distanceBetweenCones = self.calculateDeltaD(cone.x,cone.y,self.coneLocation.x,self.coneLocation.y)
-            if self.distanceBetweenCones < 20: #20 being cone radius * 2 | detects a duplicate cone
-                cone.x = (cone.x + self.coneLocation.x) / 2 #updates cone location if it was a duplicate
-                cone.y = (cone.y + self.coneLocation.y) / 2
-                self.duplicateCone = True
-                break
-
-        if self.duplicateCone == False: #if the cone was not a duplicate
-            self.allCones.append(Cone(self.coneLocation.x,self.coneLocation.y)) #add a new cone object
-            return True
-        else:
-            return False
-
-    def averageReadings(self,delay = 0.1,repeat = 8,sd_multiplier = 1.2): #gets the readings of the ultrasonic, with many overloads
+    def averageReadings(self,delay = 0.1,repeat = 7,sd_multiplier = 1.2): #gets the readings of the ultrasonic, with many overloads
         self.leftNumbers = [] #variables
         self.rightNumbers = []
         self.leftReading = 0
@@ -864,16 +837,8 @@ while True:
         robot.light("orange",True)
 
         # Motion call ---------------
-
-        # robot.moveBy(50,True)
-        # robot.rotateTo(90)
-        # robot.moveBy(50,True)
-        # robot.rotateTo(180)
-        # robot.moveBy(50,True)
-        # robot.rotateTo(-90)
-        # robot.moveBy(50,True)
-        # robot.rotateTo(0)
         
+        # robot must start at 0,0 with no cones behind
         herdAllCones()
 
         # ---------------------------
