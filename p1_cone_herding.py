@@ -150,9 +150,6 @@ class Robot:
         self.hxm = self.hx + (self.coneWidth * self.triCoords.x)
         self.hym = self.hy + (self.coneWidth * self.triCoords.y)
 
-        vexiq.lcd_write("Herd-X: " + str(self.hxm),2)
-        vexiq.lcd_write("Herd-Y: " + str(self.hym),3)
-
         self.result = self.moveToXYA(self.hxm , self.hym , None , True, 25)
 
         if deliverCone == True:
