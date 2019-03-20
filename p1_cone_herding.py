@@ -7,15 +7,6 @@ import math
 
 # -------------------------------------------
 
-# variables ---------------------------------
-
-furthestLeftPath = 0
-furthestRightPath = 0
-currentPosition = "bottom"
-allConesHerded = False
-
-# -------------------------------------------
-
 # objects and classes -----------------------
 
 # XYCoordinates class
@@ -30,20 +21,11 @@ class Readings:
         self.left = left
         self.right = right
 
-# Herd point class
-class Herdpoint:
-    def __init__(self,x,y,radius = 20):
-        self.x = x
-        self.y = y
-        self.radius = radius
-
-# Walls class
-class Walls:
-    def __init__(self, Top, Bottom, Left, Right): #specify all four walls
-        self.top = Top
-        self.bottom = Bottom
-        self.left = Left
-        self.right = Right
+# Limits class
+class Limits:
+    def __init__(self,xLimit,yLimit):
+        self.xLimit = xLimit
+        self.yLimit = yLimit
 
 # Path class
 class Path:
@@ -53,17 +35,13 @@ class Path:
         self.xLine = x_line
         self.yUpper = y_upper
         self.yLower = y_lower
-        self.completed = False
         self.xlastVisited = 0
         self.ylastVisited = 0
         self.alastVisited = 0
-        self.simpleTraverse = False
 
         if self.direction == "up" and self.yUpper != None: #sets the goalY if they are able to be calculated
-            self.simpleTraverse = True
             self.goalY = self.yUpper
         elif self.direction == "down" and self.yLower != None:
-            self.simpleTraverse = True
             self.goalY = self.yLower
 
 # Robot class
@@ -106,8 +84,6 @@ class Robot:
 
         self.colorLeft.set_proximity_threshold(0) # sets the accuracy and distance on the colour sensors
         self.colorRight.set_proximity_threshold(0)
-
-        self.herdpoint = Herdpoint(-50,-50) # sets the location of the herdpoint
 
     # ---------------------------------------
 
@@ -164,8 +140,8 @@ class Robot:
         return None
 
     def returnToHerdPoint(self,deliverCone = True): #return the robot to the herd point
-        self.hx = self.herdpoint.x #grab the herdpoint coordinates
-        self.hy = self.herdpoint.y
+        self.hx = -50
+        self.hy = -50
 
         self.moveToXYA(0,self.y,None,True)
 
@@ -180,7 +156,8 @@ class Robot:
         self.result = self.moveToXYA(self.hxm , self.hym , None , True, 25)
 
         if deliverCone == True:
-            self.deliverCone()
+            if self.carryingCone == True:
+                self.deliverCone()
 
         self.numberOfConesHerded = self.numberOfConesHerded + 1
 
@@ -710,7 +687,7 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 # Pre-program object creation ---------------
 
 robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed,Gyro_) #create robot class
-zoneWalls = Walls(100,0,-50,50)
+zoneLimits = Limits(100,100)
 
 
 # -------------------------------------------
@@ -738,24 +715,21 @@ def traversePathSimple(path):
                 result = robot.moveToXYA(path.xLine,robot.y) #move back to the path
 
             if result == False:
-                if robot.y < path.goalY + coneWallDistance and robot.y > path.goalY - coneWallDistance: #near enough to the wall
-                    break #complete the path
-                else: #it is a cone (simple traverse knows where walls are)
-                    result = robot.alignToCone() #align to the cone
-                    if result != False:
-                        if robot.carryingCone == True:
+                result = robot.alignToCone() #align to the cone
+                if result != False:
+                    if robot.carryingCone == True:
 
-                            path.xlastVisited = robot.x #sets the xLastPosition and yLastPosiiton variables
-                            path.ylastVisited = robot.y
-                            path.alastVisited = robot.angle_()
+                        path.xlastVisited = robot.x #sets the xLastPosition and yLastPosiiton variables
+                        path.ylastVisited = robot.y
+                        path.alastVisited = robot.angle_()
 
-                            robot.returnToHerdPoint(True) #take cone back
-                            robot.carryingCone = False #set carrying cone to true
-                            robot.returnToPathPoint(path) #come back to path point
+                        robot.returnToHerdPoint(True) #take cone back
+                        robot.carryingCone = False #set carrying cone to true
+                        robot.returnToPathPoint(path) #come back to path point
 
-                        else:
-                            robot.collectCone() #pickup the cone
-                            robot.carryingCone = True #set carrying cone to true    
+                    else:
+                        robot.collectCone() #pickup the cone
+                        robot.carryingCone = True #set carrying cone to true    
         
         #move the robot to the goalY ----------------------------------------------------------
 
@@ -782,91 +756,45 @@ def traversePathSimple(path):
 
         # set path as completed -------------------------------------------------------------------
 
-    path.completed = True
-    return path # path was completed
-
-def createNewPath(fl,fr,cp):
-
-    vexiq.lcd_write(fl)
-    sys.sleep(2)
-
-    potentialLeft = (fl - robot.robotWidth) # creates potential left and right
-    potentialRight = (fr + robot.robotWidth)
-    
-    if(potentialLeft < zoneWalls.left and potentialRight > zoneWalls.right): #returns none if no new paths
-        return None
-    
-    if(potentialLeft >= zoneWalls.left and robot.x <= 0): #if a left path is okay
-        if(currentPosition == "bottom"): #if needs path going up
-            newPath = Path("up",potentialLeft,zoneWalls.top,zoneWalls.bottom)
-            currentPosition = "top"
-            furthestLeftPath = potentialLeft
-        elif(currentPosition == "top"): #if needs path going down
-            newPath = Path("down",potentialLeft,zoneWalls.top,zoneWalls.bottom)
-            currentPosition = "bottom"
-            furthestLeftPath = potentialLeft
-
-        return newPath #returns the new path
-    elif(potentialRight <= zoneWalls.right and robot.x >= 0):
-        if(currentPosition == "bottom"): #if paths needs going up
-            newPath = Path("up",potentialRight,zoneWalls.top,zoneWalls.bottom)
-            currentPosition = "top"
-            furthestRightPath = potentialRight
-        elif(currentPosition == "top"): #if path needs going down
-            newPath = Path("up",potentialRight,zoneWalls.top,zoneWalls.bottom)
-            currentPosition = "bottom"
-            furthestRightPath = potentialRight
-
-        return newPath #retursn the new path
-    elif(potentialLeft >= zoneWalls.left):
-        if(currentPosition == "bottom"): #if needs path going up
-            newPath = Path("up",potentialLeft,zoneWalls.top,zoneWalls.bottom)
-            currentPosition = "top"
-            furthestLeftPath = potentialLeft
-        elif(currentPosition == "top"): #if needs path going down
-            newPath = Path("down",potentialLeft,zoneWalls.top,zoneWalls.bottom)
-            currentPosition = "bottom"
-            furthestLeftPath = potentialLeft
-
-        return newPath #returns the new path
-    elif(potentialRight <= zoneWalls.right):
-        if(currentPosition == "bottom"): #if paths needs going up
-            newPath = Path("up",potentialRight,zoneWalls.top,zoneWalls.bottom)
-            currentPosition = "top"
-            furthestRightPath = potentialRight
-        elif(currentPosition == "top"): #if path needs going down
-            newPath = Path("up",potentialRight,zoneWalls.top,zoneWalls.bottom)
-            currentPosition = "bottom"
-            furthestRightPath = potentialRight
-
-        return newPath #returns the new path
-    else:
-        return None
-
-def initialPathTraverse():
-
-    initialPath = Path("up",0,zoneWalls.top,zoneWalls.bottom) #creates the intial path and sends it to the array
-    traversePathSimple(initialPath)
-    allPaths.append(initialPath) #append path to array
-
-    initialPath = Path("down",25,zoneWalls.top,zoneWalls.bottom)
-    traversePathSimple(initialPath)
-    allPaths.append(initialPath)
-
-    initialPath = Path("up",50,zoneWalls.top,zoneWalls.bottom)
-    traversePathSimple(initialPath)
-    allPaths.append(initialPath)
-
-    robot.returnToHerdPoint()
+    return True
 
 def herdAllCones():
-    path = createNewPath(furthestLeftPath)
-    vexiq.lcd_write(path.xLine)
-    sys.sleep(2)
+
+    currentPathX = 0
+    currentPosition = "bottom"
+
+    # create new path
+    if(currentPathX > zoneLimits.xLimit):
+        path = None
+    else:
+        if(currentPosition == "bottom"):
+            path = Path("up",currentPathX,zoneLimits.yLimit,0)
+            currentPosition = "top"
+        else:
+            path = Path("down",currentPathX,zoneLimits.yLimit,0)
+            currentPosition = "bottom"
+
+        currentPathX = currentPathX + robot.robotWidth
+
+        traversePathSimple(path)
+
     while path != None:
-        path = createNewPath(furthestLeftPath)
-        vexiq.lcd_write(path.xLine)
-        sys.sleep(2)
+        # create new path
+        if(currentPathX > zoneLimits.xLimit):
+            path = None
+        else:
+            if(currentPosition == "bottom"):
+                path = Path("up",currentPathX,zoneLimits.yLimit,0)
+                currentPosition = "top"
+            else:
+                path = Path("down",currentPathX,zoneLimits.yLimit,0)
+                currentPosition = "bottom"
+
+            currentPathX = currentPathX + robot.robotWidth
+
+            traversePathSimple(path)
+
+    robot.returnToHerdPoint() #returns the robot to the herd point
 
 # -------------------------------------------
 
@@ -884,7 +812,6 @@ while True:
 
         # Motion call ---------------
         
-        # robot must start at 0,0 with no cones behind
         herdAllCones()
 
         # ---------------------------
