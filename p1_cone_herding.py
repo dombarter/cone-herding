@@ -160,6 +160,9 @@ class Robot:
         self.hxm = self.hx + (self.coneWidth * self.triCoords.x)
         self.hym = self.hy + (self.coneWidth * self.triCoords.y)
 
+        if(self.hxm > self.x): #graph traverse
+            self.moveToXYA(0,0,None,True)
+
         #deliver cone in triangle format
         self.result = self.moveToXYA(self.hxm , self.hym , None , True, 25)
 
@@ -178,6 +181,9 @@ class Robot:
         self.px = path.xlastVisited #grab previous path points
         self.py = path.ylastVisited
         self.pa = path.alastVisited
+
+        if(path.xLine - (self.robotWidth + 10) < self.x): #graph traverse
+            self.moveToXYA(0,0,None,True)
 
         #move back to safe point
         if(path.direction == "up"): #if path was going up
