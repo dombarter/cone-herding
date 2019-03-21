@@ -139,41 +139,53 @@ class Robot:
             self.led.blink()
         return None
 
-    def returnToHerdPoint(self,deliverCone = True): #return the robot to the herd point
-        self.hx = -50
-        self.hy = -50
+    def returnToHerdPoint(self,deliverCone = True,path = None): #return the robot to the herd point
+        self.hx = -50 #preset herdpoint coordinates
+        self.hy = -50 
 
-        self.moveToXYA(0,self.y,None,True)
+        #move around cones
+        if(path == None):
+            # all paths have been completed so just go straight back to herd
+            pass
+        else:
+            if(path.direction == "up"): #if the path is going upwards
+                self.moveToXYA(path.xLine,self.y,None,True) #movetoxya
+            else: #if the path is going downwards
+                self.moveToXYA((path.xLine - self.robotWidth),self.y,None,True) #movetoxya
 
+        #create traingular number
         self.triCoords = self.triNumbers(self.numberOfConesHerded)
 
+        #create multiplied triangle coordinates
         self.hxm = self.hx + (self.coneWidth * self.triCoords.x)
         self.hym = self.hy + (self.coneWidth * self.triCoords.y)
 
+        #deliver cone in triangle format
         self.result = self.moveToXYA(self.hxm , self.hym , None , True, 25)
 
+        #deliver cone
         if deliverCone == True:
             if self.carryingCone == True:
                 self.deliverCone()
 
+        #increase number of cones
         self.numberOfConesHerded = self.numberOfConesHerded + 1
 
         return True
 
     def returnToPathPoint(self,path): #return the robot to a point on a path
 
-        self.px = path.xlastVisited
+        self.px = path.xlastVisited #grab previous path points
         self.py = path.ylastVisited
         self.pa = path.alastVisited
 
-        self.moveToXYA(0,self.py,None,True)
+        #move back to safe point
+        if(path.direction == "up"): #if path was going up
+            self.moveToXYA(path.xLine,self.py,None,True)
+        else: #if path is going down
+            self.moveToXYA((path.xLine - self.robotWidth),self.py,None,True)
 
-        # if(self.px > self.x):
-        #     self.moveToXYA((self.px - self.robotWidth),self.py,None,True)
-        # elif(self.px < self.x):
-        #     self.moveToXYA((self.px + self.robotWidth),self.py,None,True)
-
-        self.moveToXYA(self.px,self.py,self.pa,True)
+        self.moveToXYA(self.px,self.py,self.pa,True) #move to specific path point
         return True
 
     def moveToXYA(self,x,y,angle = None,ignoreCone = False, distanceReduction = 0): #move the robot to an x coord, y coord and angle of rotation
@@ -720,7 +732,7 @@ def traversePathSimple(path):
                         path.ylastVisited = robot.y
                         path.alastVisited = robot.angle_()
 
-                        robot.returnToHerdPoint(True) #take cone back
+                        robot.returnToHerdPoint(True,path) #take cone back
                         robot.carryingCone = False #set carrying cone to true
                         robot.returnToPathPoint(path) #come back to path point
 
@@ -743,7 +755,7 @@ def traversePathSimple(path):
                     path.ylastVisited = robot.y
                     path.alastVisited = robot.angle_()
 
-                    robot.returnToHerdPoint(True) #take cone back
+                    robot.returnToHerdPoint(True,path) #take cone back
                     robot.carryingCone = False #set carrying cone to true
                     robot.returnToPathPoint(path) #come back to path point
 
@@ -791,13 +803,13 @@ def herdAllCones():
 
             traversePathSimple(path)
 
-    robot.returnToHerdPoint() #returns the robot to the herd point
+    robot.returnToHerdPoint(True,None) #returns the robot to the herd point
 
 # -------------------------------------------
 
 # Main Program ------------------------------
 
-#startGyro()
+startGyro()
 
 while True:
     robot.light("blue")
