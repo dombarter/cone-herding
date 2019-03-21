@@ -151,7 +151,7 @@ class Robot:
             if(path.direction == "up"): #if the path is going upwards
                 self.moveToXYA(path.xLine,self.y,None,True) #movetoxya
             else: #if the path is going downwards
-                self.moveToXYA((path.xLine - self.robotWidth),self.y,None,True) #movetoxya
+                self.moveToXYA((path.xLine - (self.robotWidth + 10)),self.y,None,True) #movetoxya
 
         #create traingular number
         self.triCoords = self.triNumbers(self.numberOfConesHerded)
@@ -183,7 +183,7 @@ class Robot:
         if(path.direction == "up"): #if path was going up
             self.moveToXYA(path.xLine,self.py,None,True)
         else: #if path is going down
-            self.moveToXYA((path.xLine - self.robotWidth),self.py,None,True)
+            self.moveToXYA((path.xLine - (self.robotWidth + 10)),self.py,None,True)
 
         self.moveToXYA(self.px,self.py,self.pa,True) #move to specific path point
         return True
