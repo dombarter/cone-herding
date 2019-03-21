@@ -702,7 +702,7 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 # Pre-program object creation ---------------
 
 robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed,Gyro_) #create robot class
-zoneLimits = Limits(100,100)
+zoneLimits = Limits(75,75)
 
 
 # -------------------------------------------
@@ -808,6 +808,40 @@ def herdAllCones():
             currentPathX = currentPathX + robot.robotWidth
 
             traversePathSimple(path)
+
+    # intial traverse finished ------------------
+
+    # create the new paths to traverse (x - 25)
+
+    leftCleanupPath = Path("up",(0 - robot.robotWidth),(zoneLimits.yLimit + robot.robotWidth),(robot.robotWidth))
+
+    rightCleanupPath = Path("down",(zoneLimits.xLimit + robot.robotWidth),(zoneLimits.yLimit + robot.robotWidth),(0 - robot.robotWidth))
+
+    # move to start of left path
+
+    robot.moveToXYA(leftCleanupPath.xLine,leftCleanupPath.yLower,None,True)
+
+    # traverse the left path
+
+    traversePathSimple(leftCleanupPath)
+
+    # traverse the right path
+
+    traversePathSimple(rightCleanupPath)
+
+    # move back to 25 , -25
+
+    robot.moveToXYA((robot.robotWidth),(0 - robot.robotWidth),None,True)
+
+    # create final path
+
+    finalPath = Path("up",(zoneLimits.xLimit + robot.robotWidth),0,(1 - robot.robotWidth)) #will eventually move the robot to zonelimits (1 + to make tiny change)
+
+    # traverse final path
+
+    traversePathSimple(finalPath)
+
+    # return to the herd point
 
     robot.returnToHerdPoint(True,None) #returns the robot to the herd point
 
