@@ -55,7 +55,7 @@ class Robot:
     allCones = [] #holds all the cones
     carryingCone = False # shows whether the robot is carrying a cone or not
     robotWidth = 25 #needs to be measured
-    coneWidth = 15
+    coneWidth = 13
     numberOfConesHerded = 0
 
     #array storing all the colour codes for the led
