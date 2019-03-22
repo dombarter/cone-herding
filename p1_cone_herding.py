@@ -47,9 +47,9 @@ class Path:
 
 # Cone class
 class Cone:
-    def __init__(self,x,y):
-        self.x = x
-        self.y = y
+    def __init__(self,x_,y_):
+        self.x = x_
+        self.y = y_
 
 # Robot class
 class Robot:
@@ -155,9 +155,10 @@ class Robot:
 
             # trace through cones 
 
-            self.pathCones = path.cones.reverse() #reverses the array of cones
-            for cone in self.pathCones: #traces through all the cones in the array
-                self.moveToXYA(cone.x,cone.y,None,True) #move to the point of the cone
+            self.pathCones = path.cones 
+
+            for i in range(len(self.pathCones)-1,-1,-1): #traces through all the cones in the array
+                self.moveToXYA(self.pathCones[i].x,self.pathCones[i].y,None,True) #move to the point of the cone
 
             # set path exit
 
@@ -789,11 +790,11 @@ def traversePathSimple(path):
                     else:
                         robot.collectCone() #pickup the cone
                         robot.carryingCone = True #set carrying cone to true
-                        path.cones.append(Cone(robot.x,robot,y)) #adds a new cone to the path    
+                        path.cones.append( Cone(robot.x,robot.y) ) #adds a new cone to the path    
         
         #clear all the cones from the path ----------------------------------------------------
 
-        paths.cones = []
+        path.cones = []
 
         #move the robot to the goalY ----------------------------------------------------------
 
