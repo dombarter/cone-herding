@@ -38,6 +38,7 @@ class Path:
         self.xlastVisited = 0
         self.ylastVisited = 0
         self.alastVisited = 0
+        self.cones = []
 
         if self.direction == "up" and self.yUpper != None: #sets the goalY if they are able to be calculated
             self.goalY = self.yUpper
@@ -146,39 +147,50 @@ class Robot:
         return None
 
     def returnToHerdPoint(self,deliverCone = True,path = None): #return the robot to the herd point
-        self.hx = -50 #preset herdpoint coordinates
+
+        self.hx = -50 # preset herdpoint coordinates
         self.hy = -50 
 
-        #move around cones
-        if(path == None):
-            # all paths have been completed so just go straight back to herd
-            pass
-        else:
-            if(path.direction == "up"): #if the path is going upwards
-                self.moveToXYA(path.xLine,self.y,None,True) #movetoxya
-            else: #if the path is going downwards
-                self.moveToXYA((path.xLine - (self.robotWidth + 10)),self.y,None,True) #movetoxya
+        # trace through cones 
 
-        #create traingular number
-        self.triCoords = self.triNumbers(self.numberOfConesHerded)
+        self.pathCones = path.cones.reverse() #reverses the array of cones
+        for cone in self.pathCones: #traces through all the cones in the array
+            self.moveToXYA(cone.x,cone.y,None,True) #move to the point of the cone
 
-        #create multiplied triangle coordinates
-        self.hxm = self.hx + (self.coneWidth * self.triCoords.x)
+        # move to path / path - width
+
+        if path.direction == "up":
+            self.moveToXYA(path.xLine,self.y,None,True) #move to path
+        elif path.direction == "down":
+            self.moveToXYA((path.xLine - (self.robotWidth + 10)),self.y,None,True) #move to previous path
+        
+        # calculate herdpoint coordinates
+
+        self.triCoords = self.triNumbers(self.numberOfConesHerded) #create traingular number
+        
+        self.hxm = self.hx + (self.coneWidth * self.triCoords.x) #create multiplied triangle coordinates
         self.hym = self.hy + (self.coneWidth * self.triCoords.y)
 
-        if(self.hxm > self.x): #graph traverse
+        # adjust to positive herdpoint location
+
+        if self.hxm > self.x:
             self.moveToXYA(0,0,None,True)
 
-        #deliver cone in triangle format
-        self.result = self.moveToXYA(self.hxm , self.hym , None , True, 25)
+        # move to the herdpoint
 
-        #deliver cone
+        self.moveToXYA(self.hxm , self.hym , None , True, self.robotWidth)
+
+        # deliver the cone
+
         if deliverCone == True:
             if self.carryingCone == True:
                 self.deliverCone()
 
-        #increase number of cones
+        # increase number of delivered cones
+
         self.numberOfConesHerded = self.numberOfConesHerded + 1
+
+        # returns
 
         return True
 
@@ -751,8 +763,13 @@ def traversePathSimple(path):
 
                     else:
                         robot.collectCone() #pickup the cone
-                        robot.carryingCone = True #set carrying cone to true    
+                        robot.carryingCone = True #set carrying cone to true
+                        path.cones.append(Cone(robot.x,robot,y)) #adds a new cone to the path    
         
+        #clear all the cones from the path ----------------------------------------------------
+
+        paths.cones = []
+
         #move the robot to the goalY ----------------------------------------------------------
 
         result = robot.moveToXYA(path.xLine,path.goalY) #move to the goalY
