@@ -151,18 +151,20 @@ class Robot:
         self.hx = -50 # preset herdpoint coordinates
         self.hy = -50 
 
-        # trace through cones 
+        if path != None:
 
-        self.pathCones = path.cones.reverse() #reverses the array of cones
-        for cone in self.pathCones: #traces through all the cones in the array
-            self.moveToXYA(cone.x,cone.y,None,True) #move to the point of the cone
+            # trace through cones 
 
-        # move to path / path - width
+            self.pathCones = path.cones.reverse() #reverses the array of cones
+            for cone in self.pathCones: #traces through all the cones in the array
+                self.moveToXYA(cone.x,cone.y,None,True) #move to the point of the cone
 
-        if path.direction == "up":
-            self.moveToXYA(path.xLine,self.y,None,True) #move to path
-        elif path.direction == "down":
-            self.moveToXYA((path.xLine - (self.robotWidth + 10)),self.y,None,True) #move to previous path
+            # move to path / path - width
+
+            if path.direction == "up":
+                self.moveToXYA(path.xLine,self.y,None,True) #move to path
+            elif path.direction == "down":
+                self.moveToXYA((path.xLine - (self.robotWidth + 10)),self.y,None,True) #move to previous path
         
         # calculate herdpoint coordinates
 
@@ -171,10 +173,11 @@ class Robot:
         self.hxm = self.hx + (self.coneWidth * self.triCoords.x) #create multiplied triangle coordinates
         self.hym = self.hy + (self.coneWidth * self.triCoords.y)
 
-        # adjust to positive herdpoint location
+        if path != None:
+            # adjust to positive herdpoint location
 
-        if self.hxm > self.x:
-            self.moveToXYA(0,0,None,True)
+            if self.hxm > self.x:
+                self.moveToXYA(0,0,None,True)
 
         # move to the herdpoint
 
@@ -192,7 +195,7 @@ class Robot:
 
         # returns
 
-        return True
+        return path
 
     def returnToPathPoint(self,path): #return the robot to a point on a path
 
@@ -200,17 +203,36 @@ class Robot:
         self.py = path.ylastVisited
         self.pa = path.alastVisited
 
-        if(path.xLine - (self.robotWidth + 10) < self.x): #graph traverse
+        # set intial path return point
+
+        if path.direction == "up":
+            self.intialPathPoint = path.xLine
+        elif path.direction == "down":
+            self.intialPathPoint = (path.xLine - (self.robotWidth + 10))
+
+        # deal with positive herdpoint position
+
+        if self.x > self.intialPathPoint:
             self.moveToXYA(0,0,None,True)
 
-        #move back to safe point
-        if(path.direction == "up"): #if path was going up
-            self.moveToXYA(path.xLine,self.py,None,True)
-        else: #if path is going down
-            self.moveToXYA((path.xLine - (self.robotWidth + 10)),self.py,None,True)
+        # move to intial path point
 
-        self.moveToXYA(self.px,self.py,self.pa,True) #move to specific path point
+        self.moveToXYA(self.intialPathPoint,path.pathExit,None,True)
+
+        # trace through cone positions
+
+        self.pathCones = path.cones #reverses the array of cones
+        for cone in self.pathCones: #traces through all the cones in the array
+            self.moveToXYA(cone.x,cone.y,None,True) #move to the point of the cone
+
+        # move to stored path point
+
+        self.moveToXYA(path.xlastVisited,path.ylastVisited,path.alastVisited,True)
+
+        # returns
+
         return True
+
 
     def moveToXYA(self,x,y,angle = None,ignoreCone = False, distanceReduction = 0): #move the robot to an x coord, y coord and angle of rotation
         self.currentX = self.x #grabs current x coordinate
