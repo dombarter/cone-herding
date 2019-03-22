@@ -835,7 +835,7 @@ def herdAllCones():
 
     # create final path
 
-    finalPath = Path("up",(zoneLimits.xLimit + robot.robotWidth),0,(1 - robot.robotWidth)) #will eventually move the robot to zonelimits (1 + to make tiny change)
+    finalPath = Path("up",(zoneLimits.xLimit + robot.robotWidth),(1 - robot.robotWidth),(0 - robot.robotWidth)) #will eventually move the robot to zonelimits (1 + to make tiny change)
 
     # traverse final path
 
