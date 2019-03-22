@@ -44,6 +44,12 @@ class Path:
         elif self.direction == "down" and self.yLower != None:
             self.goalY = self.yLower
 
+# Cone class
+class Cone:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+
 # Robot class
 class Robot:
 
