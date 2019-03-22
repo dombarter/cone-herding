@@ -724,6 +724,7 @@ def traversePathSimple(path):
 
         while robot.x != path.xLine: #keep aligning to the path line
 
+            #check readings
             result = (robot.resolveReadings(1) == False)
 
             if(result == True):
@@ -808,40 +809,6 @@ def herdAllCones():
             currentPathX = currentPathX + robot.robotWidth
 
             traversePathSimple(path)
-
-    # intial traverse finished ------------------
-
-    # create the new paths to traverse (x - 25)
-
-    leftCleanupPath = Path("up",(0 - robot.robotWidth),(zoneLimits.yLimit + robot.robotWidth),(robot.robotWidth))
-
-    rightCleanupPath = Path("down",(zoneLimits.xLimit + robot.robotWidth),(zoneLimits.yLimit + robot.robotWidth),(0 - robot.robotWidth))
-
-    # move to start of left path
-
-    robot.moveToXYA(leftCleanupPath.xLine,leftCleanupPath.yLower,None,True)
-
-    # traverse the left path
-
-    traversePathSimple(leftCleanupPath)
-
-    # traverse the right path
-
-    traversePathSimple(rightCleanupPath)
-
-    # move back to 25 , -25
-
-    robot.moveToXYA((robot.robotWidth),(0 - robot.robotWidth),None,True)
-
-    # create final path
-
-    finalPath = Path("up",(zoneLimits.xLimit + robot.robotWidth),(1 - robot.robotWidth),(0 - robot.robotWidth)) #will eventually move the robot to zonelimits (1 + to make tiny change)
-
-    # traverse final path
-
-    traversePathSimple(finalPath)
-
-    # return to the herd point
 
     robot.returnToHerdPoint(True,None) #returns the robot to the herd point
 
