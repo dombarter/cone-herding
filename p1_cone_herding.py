@@ -159,6 +159,10 @@ class Robot:
             for cone in self.pathCones: #traces through all the cones in the array
                 self.moveToXYA(cone.x,cone.y,None,True) #move to the point of the cone
 
+            # set path exit
+
+            path.pathExit = self.y
+
             # move to path / path - width
 
             if path.direction == "up":
@@ -232,7 +236,6 @@ class Robot:
         # returns
 
         return True
-
 
     def moveToXYA(self,x,y,angle = None,ignoreCone = False, distanceReduction = 0): #move the robot to an x coord, y coord and angle of rotation
         self.currentX = self.x #grabs current x coordinate
@@ -779,7 +782,7 @@ def traversePathSimple(path):
                         path.ylastVisited = robot.y
                         path.alastVisited = robot.angle_()
 
-                        robot.returnToHerdPoint(True,path) #take cone back
+                        path = robot.returnToHerdPoint(True,path) #take cone back
                         robot.carryingCone = False #set carrying cone to true
                         robot.returnToPathPoint(path) #come back to path point
 
@@ -807,7 +810,7 @@ def traversePathSimple(path):
                     path.ylastVisited = robot.y
                     path.alastVisited = robot.angle_()
 
-                    robot.returnToHerdPoint(True,path) #take cone back
+                    path = robot.returnToHerdPoint(True,path) #take cone back
                     robot.carryingCone = False #set carrying cone to true
                     robot.returnToPathPoint(path) #come back to path point
 
