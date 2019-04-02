@@ -717,11 +717,13 @@ class Robot:
 
         self.number = n # input the number
 
-        self.estimate = round(math.sqrt((2*self.number) + 1) - 1)
-        self.y_ = 0.5 * ( (2 * self.number) - (self.estimate ** 2) - (self.estimate) )
-        self.x_ = 0.5 * ( (self.estimate ** 2) + (3 * self.estimate) - (2 * self.number) )
+        self.estimate = round(math.sqrt((2*self.number) + 1) - 1) # create the estimate 
 
-        return XYCoordinates(self.x_,self.y_)
+        self.y_ = 0.5 * ( (2 * self.number) - (self.estimate ** 2) - (self.estimate) ) # create the y value
+
+        self.x_ = 0.5 * ( (self.estimate ** 2) + (3 * self.estimate) - (2 * self.number) ) # create the x value
+
+        return XYCoordinates(self.x_,self.y_) # return a new set of coordinates
 
     # ---------------------------------------
 
