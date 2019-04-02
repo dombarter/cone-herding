@@ -40,10 +40,13 @@ class Path:
         self.alastVisited = 0
         self.cones = []
 
-        if self.direction == "up" and self.yUpper != None: #sets the goalY if they are able to be calculated
+        if self.direction == "up" and self.yUpper != None: #sets the goalY with given variables
             self.goalY = self.yUpper
         elif self.direction == "down" and self.yLower != None:
             self.goalY = self.yLower
+        else:
+            self.direction = "up"
+            self.goalY = self.yUpper
 
 # Cone class
 class Cone:
@@ -571,12 +574,12 @@ class Robot:
         self.rightReading = round(self.meanOfValues(self.newRightNumbers),2)
         self.newReadings = Readings(self.leftReading,self.rightReading) #creates a new readings class
         
-        self.leftNumbers = []
+        self.leftNumbers = [] #empties all the arrays
         self.rightNumbers = []
         self.newLeftNumbers = []
         self.newRightNumbers = []
 
-        del self.leftNumbers #memory clearing
+        del self.leftNumbers #deletes all the variables
         del self.rightNumbers
         del self.leftReading
         del self.rightReading
@@ -712,7 +715,7 @@ class Robot:
 
     def triNumbers(self,n):
 
-        self.number = n
+        self.number = n # input the number
 
         self.estimate = round(math.sqrt((2*self.number) + 1) - 1)
         self.y_ = 0.5 * ( (2 * self.number) - (self.estimate ** 2) - (self.estimate) )
@@ -746,6 +749,7 @@ dt          = drivetrain.Drivetrain(LeftDrive, RightDrive, 200, 212)
 # Pre-program object creation ---------------
 
 robot = Robot(dt,ArmLeft,ArmRight,Claw,LeftColour,RightColour,UltraLeft,UltraRight,TouchLed,Gyro_) #create robot class
+
 zoneLimits = Limits(75,75)
 
 

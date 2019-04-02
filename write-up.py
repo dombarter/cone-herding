@@ -1,31 +1,67 @@
-    def alignToCone(self):
-        #will return false if evidently there is no cone there
-        if self.lookingAtCone() == False and self.distanceLeft.distance() >= 45 and self.distanceRight.distance() >= 45:
-            return False
-        else:
-            if self.checkDistance(True) > 25: #if there is a cone there but not closer than 25cm
-                self.deltaD = round(self.calculateUltraDistance() - 25)
-                self.moveBy(self.deltaD,True) #move to 25cm away
-            self.maxSwingAmount = 5 #set the number of times to swing left and right
-            if self.distanceLeft.distance() > self.distanceRight.distance(): #set the intial direction of swing
-                self.directionOfSwing = 1
-            else:
-                self.directionOfSwing = -1
-            for swing in range(4, self.maxSwingAmount + 4): #swing left and right
-                for turn in range(0,swing):
-                    if self.lookingAtCone(): #check for cone
-                        break
-                    self.rotateBy(self.directionOfSwing * 6) #turn the robot left or right
-                    sys.sleep(0.6)
-                if self.lookingAtCone(): #check for cone
-                    break
-                self.directionOfSwing = self.directionOfSwing * -1 #change the direction of swing
-            self.deltaD = round(self.calculateUltraDistance() - 20) #move the robot to be 20cm away
-            self.moveBy(self.deltaD,True)
-            sys.sleep(1)
-            self.deltaD = round(self.calculateUltraDistance() - 20) #move the robot to be 20cm away
-            self.moveBy(self.deltaD,True)
-            return True #return successful alignment
+def traversePathSimple(path):
+
+    while robot.y != path.goalY: #while still not at the goalY (determines path completion)
+
+        # realign to the path -----------------------------------------------------------------
+
+        while robot.x != path.xLine: #keep aligning to the path line
+
+            result = robot.moveToXYA(path.xLine,robot.y) #move back to the path
+
+            if result == False:
+                if robot.y < path.goalY + coneWallDistance and robot.y > path.goalY - coneWallDistance: #near enough to the wall
+                    break #complete the path
+                else: #it is a cone (simple traverse knows where walls are)
+                    result = robot.alignToCone() #align to the cone
+                    if result != False:
+                        if robot.carryingCone == True:
+
+                            path.xlastVisited = robot.x #sets the xLastPosition and yLastPosiiton variables
+                            path.ylastVisited = robot.y
+                            path.alastVisited = robot.angle_()
+
+                            robot.debug(False,0,"red")
+                            robot.returnToHerdPoint(True) #take cone back
+                            robot.carryingCone = False #set carrying cone to true
+                            robot.debug(False,0,"red_orange")
+                            robot.returnToPathPoint(path) #come back to path point
+
+                        else:
+                            robot.collectCone() #pickup the cone
+                            robot.carryingCone = True #set carrying cone to true    
+        
+        #move the robot to the goalY ----------------------------------------------------------
+
+        result = robot.moveToXYA(path.xLine,path.goalY) #move to the goalY
+
+        #the move to xya has failed -----------------------------------------------------------
+
+        if result == False:
+            if robot.y < path.goalY + coneWallDistance and robot.y > path.goalY - coneWallDistance: #near enough to the wall
+                break #complete the path
+            else: #it is a cone (simple traverse knows where walls are)
+                result = robot.alignToCone() #align to the cone
+                if result != False:
+                    if robot.carryingCone == True:
+
+                        path.xlastVisited = robot.x #sets the xLastPosition and yLastPosiiton variables
+                        path.ylastVisited = robot.y
+                        path.alastVisited = robot.angle_()
+
+                        robot.debug(False,0,"red")
+                        robot.returnToHerdPoint(True) #take cone back
+                        robot.carryingCone = False #set carrying cone to true
+                        robot.debug(False,0,"red_orange")
+                        robot.returnToPathPoint(path) #come back to path point
+
+                    else:
+                        robot.collectCone() #pickup the cone
+                        robot.carryingCone = True #set carrying cone to true                        
+
+        # set path as completed -------------------------------------------------------------------
+
+    path.completed = True
+    return path # path was completed
 
 
 
