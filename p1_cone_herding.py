@@ -773,6 +773,8 @@ def traversePathSimple(path):
 
     return True
 
+def createNewPath():
+
 def herdAllCones():
 
     currentPathX = 0
