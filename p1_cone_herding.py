@@ -169,9 +169,9 @@ class Robot:
 
             # move to path / path - width
 
-            if path.direction == "up":
-                self.moveToXYA(path.xLine,self.y,None,True) #move to path
-            elif path.direction == "down":
+            if path.direction == "up": #deal with up path
+                self.moveToXYA(path.xLine,self.y,None,True) 
+            elif path.direction == "down": #deal with down path
                 self.moveToXYA((path.xLine - (self.robotWidth + 10)),self.y,None,True) #move to previous path
         
         # calculate herdpoint coordinates
