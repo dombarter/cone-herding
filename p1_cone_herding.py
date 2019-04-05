@@ -24,8 +24,8 @@ class Readings:
 # Limits class
 class Limits:
     def __init__(self,xLimit,yLimit):
-        self.xLimit = xLimit
-        self.yLimit = yLimit
+        self.xLimit = math.fabs(xLimit)
+        self.yLimit = math.fabs(yLimit)
 
 # Path class
 class Path:
